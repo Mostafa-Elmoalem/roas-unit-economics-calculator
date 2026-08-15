@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { generateSensitivityMatrix, formatCurrency } from '../../lib/calculations';
 import { Activity } from 'lucide-react';
 
 export const SensitivityMatrixCard: React.FC = () => {
+  const { t } = useTranslation();
   const { activeProduct, currency } = useApp();
   const [metricView, setMetricView] = useState<'profit' | 'unit-profit' | 'margin'>('profit');
 
@@ -30,10 +32,10 @@ export const SensitivityMatrixCard: React.FC = () => {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-[#f4f4f5] tracking-tight">
-              Sensitivity Simulation Matrix
+              {t('calculator.sensitivityTitle')}
             </h3>
             <p className="text-[11px] text-[#71717a] mt-0.5">
-              Simulate profit outcomes across delivery fulfillment rates vs. ad acquisition cost (CPA)
+              {t('calculator.sensitivityDesc')}
             </p>
           </div>
         </div>
@@ -48,7 +50,7 @@ export const SensitivityMatrixCard: React.FC = () => {
                 : 'text-[#71717a] hover:text-[#a1a1aa]'
             }`}
           >
-            Total Profit
+            {t('calculator.totalProfitToggle')}
           </button>
           <button
             onClick={() => setMetricView('unit-profit')}
@@ -58,7 +60,7 @@ export const SensitivityMatrixCard: React.FC = () => {
                 : 'text-[#71717a] hover:text-[#a1a1aa]'
             }`}
           >
-            Profit / Unit
+            {t('calculator.profitUnitToggle')}
           </button>
           <button
             onClick={() => setMetricView('margin')}
@@ -68,7 +70,7 @@ export const SensitivityMatrixCard: React.FC = () => {
                 : 'text-[#71717a] hover:text-[#a1a1aa]'
             }`}
           >
-            Net Margin %
+            {t('calculator.marginToggle')}
           </button>
         </div>
       </div>
@@ -77,8 +79,8 @@ export const SensitivityMatrixCard: React.FC = () => {
         <table className="w-full text-center text-xs">
           <thead>
             <tr>
-              <th className="p-2 text-left text-[11px] font-semibold text-[#71717a] uppercase tracking-wider">
-                Fulfillment %
+              <th className="p-2 text-left rtl:text-right text-[11px] font-semibold text-[#71717a] uppercase tracking-wider">
+                {t('calculator.fulfillmentCol')}
               </th>
               {matrix.adSpendMultipliers.map((col, idx) => (
                 <th
@@ -108,7 +110,7 @@ export const SensitivityMatrixCard: React.FC = () => {
 
               return (
                 <tr key={rowIdx} className="hover:bg-[#202024]/30 transition">
-                  <td className="py-2.5 px-3 text-left font-bold font-mono-nums text-[#f4f4f5]">
+                  <td className="py-2.5 px-3 text-left rtl:text-right font-bold font-mono-nums text-[#f4f4f5]">
                     <div className="flex items-center gap-1.5">
                       {isCurrentFulfillment && (
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />

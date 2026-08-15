@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { Product, Currency, ViewMode, PortfolioMetrics, CalculatedMetrics } from '../types';
 import { INITIAL_PRODUCTS } from '../lib/mockData';
@@ -31,7 +31,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   PROJECT_NAME: 'roas_calc_project_name',
   CURRENCY: 'roas_calc_currency',
   PRODUCTS: 'roas_calc_products',
@@ -39,100 +39,141 @@ const STORAGE_KEYS = {
   VIEW: 'roas_calc_view',
 };
 
-export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // 1. Initial State from localStorage
-  const [projectName, setProjectNameState] = useState<string>(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEYS.PROJECT_NAME) || 'Q3 E-Commerce Performance Unit Economics';
-    } catch {
-      return 'Q3 E-Commerce Performance Unit Economics';
-    }
-  });
+// Dual-layer Storage Utility (Synchronous LocalStorage + SessionStorage)
+const Storage = {
+  get: <T,>(key: string, fallback: T): T => {
+    if (typeof window === 'undefined') return fallback;
 
-  const [currency, setCurrencyState] = useState<Currency>(() => {
+    // 1. Try SessionStorage first
     try {
-      return (localStorage.getItem(STORAGE_KEYS.CURRENCY) as Currency) || 'USD';
+      const sessionItem = window.sessionStorage?.getItem(key);
+      if (sessionItem !== null && sessionItem !== undefined && sessionItem !== '') {
+        const parsed = JSON.parse(sessionItem);
+        if (parsed !== undefined && parsed !== null) return parsed as T;
+      }
     } catch {
-      return 'USD';
+      // fallback
     }
-  });
+
+    // 2. Try LocalStorage
+    try {
+      const localItem = window.localStorage?.getItem(key);
+      if (localItem !== null && localItem !== undefined && localItem !== '') {
+        const parsed = JSON.parse(localItem);
+        if (parsed !== undefined && parsed !== null) return parsed as T;
+      }
+    } catch {
+      // fallback
+    }
+
+    return fallback;
+  },
+
+  set: <T,>(key: string, value: T): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      const serialized = JSON.stringify(value);
+      try {
+        window.localStorage?.setItem(key, serialized);
+      } catch (err) {
+        console.warn('LocalStorage save error:', err);
+      }
+      try {
+        window.sessionStorage?.setItem(key, serialized);
+      } catch (err) {
+        console.warn('SessionStorage save error:', err);
+      }
+    } catch (err) {
+      console.error('Storage serialization error:', err);
+    }
+  },
+};
+
+export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // 1. Initial State from Dual Storage (SessionStorage + LocalStorage)
+  const [projectName, setProjectNameState] = useState<string>(() =>
+    Storage.get(STORAGE_KEYS.PROJECT_NAME, 'Q3 E-Commerce Performance Unit Economics')
+  );
+
+  const [currency, setCurrencyState] = useState<Currency>(() =>
+    Storage.get(STORAGE_KEYS.CURRENCY, 'USD' as Currency)
+  );
 
   const [products, setProductsState] = useState<Product[]>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      }
-    } catch (e) {
-      console.error('Failed to load products from localStorage', e);
-    }
-    return INITIAL_PRODUCTS;
+    const loaded = Storage.get<Product[]>(STORAGE_KEYS.PRODUCTS, INITIAL_PRODUCTS);
+    return Array.isArray(loaded) && loaded.length > 0 ? loaded : INITIAL_PRODUCTS;
   });
 
   const [activeProductId, setActiveProductIdState] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEYS.ACTIVE_PRODUCT_ID) || (INITIAL_PRODUCTS[0]?.id ?? null);
-    } catch {
-      return INITIAL_PRODUCTS[0]?.id ?? null;
-    }
+    const loaded = Storage.get<string | null>(STORAGE_KEYS.ACTIVE_PRODUCT_ID, null);
+    if (loaded && products.some((p) => p.id === loaded)) return loaded;
+    return products[0]?.id ?? INITIAL_PRODUCTS[0]?.id ?? null;
   });
 
-  const [view, setViewState] = useState<ViewMode>(() => {
-    try {
-      return (localStorage.getItem(STORAGE_KEYS.VIEW) as ViewMode) || 'dashboard';
-    } catch {
-      return 'dashboard';
-    }
-  });
+  const [view, setViewState] = useState<ViewMode>(() =>
+    Storage.get(STORAGE_KEYS.VIEW, 'dashboard' as ViewMode)
+  );
 
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // 2. Persist to localStorage
+  // Use refs to always have the latest synchronous state for pagehide/unload
+  const stateRef = useRef({ projectName, currency, products, activeProductId, view });
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.PROJECT_NAME, projectName);
-    } catch (e) {
-      console.error(e);
-    }
+    stateRef.current = { projectName, currency, products, activeProductId, view };
+  }, [projectName, currency, products, activeProductId, view]);
+
+  // Synchronous flush handler
+  const flushToStorage = useCallback(() => {
+    const s = stateRef.current;
+    Storage.set(STORAGE_KEYS.PROJECT_NAME, s.projectName);
+    Storage.set(STORAGE_KEYS.CURRENCY, s.currency);
+    Storage.set(STORAGE_KEYS.PRODUCTS, s.products);
+    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, s.activeProductId);
+    Storage.set(STORAGE_KEYS.VIEW, s.view);
+  }, []);
+
+  // Listen to beforeunload, pagehide, and visibilitychange to prevent data loss on reload/tab switch
+  useEffect(() => {
+    const handleUnload = () => {
+      flushToStorage();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        flushToStorage();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('pagehide', handleUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [flushToStorage]);
+
+  // Reactive updates to storage
+  useEffect(() => {
+    Storage.set(STORAGE_KEYS.PROJECT_NAME, projectName);
   }, [projectName]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.CURRENCY, currency);
-    } catch (e) {
-      console.error(e);
-    }
+    Storage.set(STORAGE_KEYS.CURRENCY, currency);
   }, [currency]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-    } catch (e) {
-      console.error(e);
-    }
+    Storage.set(STORAGE_KEYS.PRODUCTS, products);
   }, [products]);
 
   useEffect(() => {
-    try {
-      if (activeProductId) {
-        localStorage.setItem(STORAGE_KEYS.ACTIVE_PRODUCT_ID, activeProductId);
-      } else {
-        localStorage.removeItem(STORAGE_KEYS.ACTIVE_PRODUCT_ID);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, activeProductId);
   }, [activeProductId]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.VIEW, view);
-    } catch (e) {
-      console.error(e);
-    }
+    Storage.set(STORAGE_KEYS.VIEW, view);
   }, [view]);
 
   // 3. Derived active product and metrics
@@ -149,11 +190,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return calculateProductMetrics(activeProduct);
   }, [activeProduct]);
 
-  // Setters with state update
-  const setProjectName = (name: string) => setProjectNameState(name);
-  const setCurrency = (c: Currency) => setCurrencyState(c);
-  const setActiveProductId = (id: string | null) => setActiveProductIdState(id);
-  const setView = (v: ViewMode) => setViewState(v);
+  // Immediate synchronous setters
+  const setProjectName = (name: string) => {
+    setProjectNameState(name);
+    Storage.set(STORAGE_KEYS.PROJECT_NAME, name);
+  };
+
+  const setCurrency = (c: Currency) => {
+    setCurrencyState(c);
+    Storage.set(STORAGE_KEYS.CURRENCY, c);
+  };
+
+  const setActiveProductId = (id: string | null) => {
+    setActiveProductIdState(id);
+    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, id);
+  };
+
+  const setView = (v: ViewMode) => {
+    setViewState(v);
+    Storage.set(STORAGE_KEYS.VIEW, v);
+  };
 
   // Actions
   const addProduct = (productData?: Partial<Product>): Product => {
@@ -179,15 +235,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       updatedAt: new Date().toISOString(),
     };
 
-    setProductsState((prev) => [newProduct, ...prev]);
+    const nextProducts = [newProduct, ...products];
+    setProductsState(nextProducts);
     setActiveProductIdState(newId);
     setViewState('calculator');
+
+    // Immediate synchronous save to both storages
+    Storage.set(STORAGE_KEYS.PRODUCTS, nextProducts);
+    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, newId);
+    Storage.set(STORAGE_KEYS.VIEW, 'calculator');
+
     return newProduct;
   };
 
   const updateProduct = (id: string, updates: Partial<Product>) => {
-    setProductsState((prev) =>
-      prev.map((p) => {
+    setProductsState((prev) => {
+      const nextProducts = prev.map((p) => {
         if (p.id !== id) return p;
 
         const updated: Product = {
@@ -210,19 +273,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
 
         return updated;
-      })
-    );
+      });
+
+      // Synchronously write immediately to localStorage & sessionStorage
+      Storage.set(STORAGE_KEYS.PRODUCTS, nextProducts);
+      return nextProducts;
+    });
   };
 
   const deleteProduct = (id: string) => {
     setProductsState((prev) => {
       const remaining = prev.filter((p) => p.id !== id);
+      let nextActiveId = activeProductId;
+
       if (activeProductId === id) {
-        setActiveProductIdState(remaining[0]?.id || null);
+        nextActiveId = remaining[0]?.id || null;
+        setActiveProductIdState(nextActiveId);
         if (remaining.length === 0) {
           setViewState('dashboard');
+          Storage.set(STORAGE_KEYS.VIEW, 'dashboard');
         }
       }
+
+      Storage.set(STORAGE_KEYS.PRODUCTS, remaining);
+      Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, nextActiveId);
       return remaining;
     });
   };
@@ -245,19 +319,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       updatedAt: new Date().toISOString(),
     };
 
-    setProductsState((prev) => [duplicate, ...prev]);
+    const nextProducts = [duplicate, ...products];
+    setProductsState(nextProducts);
     setActiveProductIdState(newId);
+
+    Storage.set(STORAGE_KEYS.PRODUCTS, nextProducts);
+    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, newId);
+
     return duplicate;
   };
 
   const importProducts = (newProducts: Product[], replace = false) => {
-    if (replace) {
-      setProductsState(newProducts);
-      setActiveProductIdState(newProducts[0]?.id || null);
-    } else {
-      setProductsState((prev) => [...newProducts, ...prev]);
-      setActiveProductIdState(newProducts[0]?.id || null);
-    }
+    const nextProducts = replace ? newProducts : [...newProducts, ...products];
+    const nextActiveId = newProducts[0]?.id || null;
+
+    setProductsState(nextProducts);
+    setActiveProductIdState(nextActiveId);
+
+    Storage.set(STORAGE_KEYS.PRODUCTS, nextProducts);
+    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, nextActiveId);
   };
 
   const resetToDemoData = () => {
@@ -265,6 +345,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setActiveProductIdState(INITIAL_PRODUCTS[0]?.id || null);
     setProjectNameState('Q3 E-Commerce Performance Unit Economics');
     setCurrencyState('USD');
+
+    Storage.set(STORAGE_KEYS.PRODUCTS, INITIAL_PRODUCTS);
+    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, INITIAL_PRODUCTS[0]?.id || null);
+    Storage.set(STORAGE_KEYS.PROJECT_NAME, 'Q3 E-Commerce Performance Unit Economics');
+    Storage.set(STORAGE_KEYS.CURRENCY, 'USD');
   };
 
   return (

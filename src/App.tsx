@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/common/Header';
 import { MainDashboard } from './components/dashboard/MainDashboard';
@@ -8,6 +9,7 @@ import { AddProductModal } from './components/modals/AddProductModal';
 import { Heart } from 'lucide-react';
 
 const AppContent: React.FC = () => {
+  const { t } = useTranslation();
   const { view } = useApp();
 
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -39,16 +41,16 @@ const AppContent: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span className="text-[#a1a1aa] font-medium">
-              E-Commerce Performance Economics Engine
+              {t('footer.engineDesc')}
             </span>
             <span>•</span>
-            <span>100% In-Browser & LocalStorage Synced</span>
+            <span>{t('footer.storageSynced')}</span>
           </div>
 
           <div className="flex items-center gap-2 text-[#71717a]">
-            <span>Made with</span>
+            <span>{t('footer.madeWith')}</span>
             <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 inline" />
-            <span>by</span>
+            <span>{t('footer.by')}</span>
             <a
               href="https://github.com/Mostafa-Elmoalem"
               target="_blank"

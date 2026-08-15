@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { parseCustomCSVOrExcel, generateSampleCSV } from '../../lib/csvParser';
 import type { Product } from '../../types';
@@ -18,6 +19,7 @@ interface ImportModalProps {
 }
 
 export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const { importProducts, currency } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,10 +90,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
             </div>
             <div>
               <h3 className="text-base font-semibold text-[#f4f4f5]">
-                Import Products (CSV / Excel)
+                {t('modals.importTitle')}
               </h3>
               <p className="text-xs text-[#a1a1aa]">
-                Upload custom spreadsheets with auto-detected columns
+                {t('modals.importDesc')}
               </p>
             </div>
           </div>
@@ -109,15 +111,15 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
           {/* Download Sample Template Banner */}
           <div className="flex items-center justify-between p-3 rounded-xl bg-[#09090b] border border-[#27272a] text-xs">
             <div className="flex items-center gap-2 text-[#a1a1aa]">
-              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-              <span>Need a starting point? Download our standard format template.</span>
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>{t('modals.templateBanner')}</span>
             </div>
             <button
               onClick={handleDownloadSample}
-              className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-semibold transition"
+              className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-semibold transition shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Template.csv</span>
+              <span>{t('modals.downloadTemplate')}</span>
             </button>
           </div>
 
@@ -154,10 +156,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
               </div>
               <div>
                 <p className="text-sm font-semibold text-[#f4f4f5]">
-                  {fileName ? fileName : 'Click to browse or drag & drop files'}
+                  {fileName ? fileName : t('modals.dropzoneText')}
                 </p>
                 <p className="text-xs text-[#71717a] mt-0.5">
-                  Supports CSV, XLSX, and XLS formats
+                  {t('modals.dropzoneSubtext')}
                 </p>
               </div>
             </div>
@@ -170,7 +172,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
                 <AlertCircle className="w-4 h-4" />
                 <span>Notice while parsing:</span>
               </div>
-              <ul className="list-disc pl-5 space-y-0.5 text-[11px]">
+              <ul className="list-disc pl-5 rtl:pr-5 rtl:pl-0 space-y-0.5 text-[11px]">
                 {errors.slice(0, 3).map((err, i) => (
                   <li key={i}>{err}</li>
                 ))}
@@ -184,7 +186,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Successfully detected {parsedProducts.length} products</span>
+                  <span>{t('modals.detectedProducts', { count: parsedProducts.length })}</span>
                 </div>
 
                 {/* Append vs Replace Mode */}
@@ -197,7 +199,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
                         : 'text-[#71717a]'
                     }`}
                   >
-                    Append
+                    {t('modals.append')}
                   </button>
                   <button
                     onClick={() => setImportMode('replace')}
@@ -207,20 +209,20 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
                         : 'text-[#71717a]'
                     }`}
                   >
-                    Replace All
+                    {t('modals.replaceAll')}
                   </button>
                 </div>
               </div>
 
               <div className="border border-[#27272a] rounded-xl overflow-hidden max-h-48 overflow-y-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left rtl:text-right text-xs">
                   <thead className="bg-[#09090b] text-[#71717a] border-b border-[#27272a] sticky top-0">
                     <tr>
-                      <th className="py-2 px-3">Product</th>
-                      <th className="py-2 px-3">Price</th>
+                      <th className="py-2 px-3">{t('dashboard.tableProductName')}</th>
+                      <th className="py-2 px-3">{t('dashboard.tablePrice')}</th>
                       <th className="py-2 px-3">COGS</th>
-                      <th className="py-2 px-3">Units</th>
-                      <th className="py-2 px-3">Shipping</th>
+                      <th className="py-2 px-3">{t('common.units')}</th>
+                      <th className="py-2 px-3">{t('calculator.shippingLegend')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#27272a]">
@@ -254,14 +256,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-xs font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a] transition"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleConfirmImport}
             disabled={parsedProducts.length === 0}
             className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
           >
-            Import {parsedProducts.length > 0 ? `${parsedProducts.length} Products` : ''}
+            {parsedProducts.length > 0 ? t('modals.importBtn', { count: parsedProducts.length }) : t('common.importCSV')}
           </button>
         </div>
       </div>

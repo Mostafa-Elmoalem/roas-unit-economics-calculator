@@ -1,73 +1,71 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { formatCurrency } from '../../lib/calculations';
 import type { FixedCostItem } from '../../types';
-import { Landmark, Plus, Trash2 } from 'lucide-react';
+import { Building2, Plus, Trash2 } from 'lucide-react';
 
 export const FixedCostsCard: React.FC = () => {
+  const { t } = useTranslation();
   const { activeProduct, activeProductMetrics, updateProduct, currency } = useApp();
 
   if (!activeProduct || !activeProductMetrics) return null;
 
-  const handleUpdateCost = (costId: string, updates: Partial<FixedCostItem>) => {
-    const updatedCosts = activeProduct.fixedCosts.map((fc) =>
-      fc.id === costId ? { ...fc, ...updates } : fc
-    );
-    updateProduct(activeProduct.id, { fixedCosts: updatedCosts });
-  };
-
   const handleAddCost = () => {
-    const newCost: FixedCostItem = {
+    const newItem: FixedCostItem = {
       id: `fc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      name: 'Custom Overhead Expense',
+      name: 'Custom Overhead',
       amount: 500,
     };
     updateProduct(activeProduct.id, {
-      fixedCosts: [...activeProduct.fixedCosts, newCost],
+      fixedCosts: [...activeProduct.fixedCosts, newItem],
     });
   };
 
+  const handleUpdateCost = (costId: string, updates: Partial<FixedCostItem>) => {
+    const nextCosts = activeProduct.fixedCosts.map((item) =>
+      item.id === costId ? { ...item, ...updates } : item
+    );
+    updateProduct(activeProduct.id, { fixedCosts: nextCosts });
+  };
+
   const handleDeleteCost = (costId: string) => {
-    const remaining = activeProduct.fixedCosts.filter((fc) => fc.id !== costId);
-    updateProduct(activeProduct.id, { fixedCosts: remaining });
+    const nextCosts = activeProduct.fixedCosts.filter((item) => item.id !== costId);
+    updateProduct(activeProduct.id, { fixedCosts: nextCosts });
   };
 
   return (
-    <div className="bg-[#18181b] border border-[#27272a] rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+    <div className="bg-[#18181b] border border-[#27272a] rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
       <div className="flex items-center justify-between border-b border-[#27272a] pb-3">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-            <Landmark className="w-4 h-4" />
+            <Building2 className="w-4 h-4" />
           </div>
           <h3 className="text-sm font-semibold text-[#f4f4f5] tracking-tight">
-            2. Fixed Overheads & Campaign Costs
+            {t('calculator.fixedCostsTitle')}
           </h3>
         </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-[#a1a1aa] font-mono-nums">
-            {formatCurrency(activeProductMetrics.fixedCostPerUnit, currency)}/unit
-          </span>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#09090b] border border-[#27272a] text-[11px] text-[#a1a1aa] font-mono-nums">
+          <span>{formatCurrency(activeProductMetrics.fixedCostPerUnit, currency)}</span>
+          <span className="text-[#71717a]">{t('calculator.fixedCostPerUnit')}</span>
         </div>
       </div>
 
-      {/* Dynamic line items */}
       <div className="space-y-2.5">
         {activeProduct.fixedCosts.map((cost) => (
           <div
             key={cost.id}
-            className="flex items-center gap-2 bg-[#09090b] border border-[#27272a] hover:border-[#3f3f46] rounded-xl p-2 transition-colors"
+            className="flex items-center gap-2 bg-[#09090b] border border-[#27272a] rounded-xl p-2 sm:p-2.5 transition focus-within:border-emerald-500/50"
           >
             <input
               type="text"
               value={cost.name}
               onChange={(e) => handleUpdateCost(cost.id, { name: e.target.value })}
               className="flex-1 bg-transparent text-xs font-medium text-[#f4f4f5] outline-none px-2"
-              placeholder="Expense name"
+              placeholder="Overhead name"
             />
-
-            <div className="relative w-28 shrink-0">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-[#71717a] font-semibold">
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-semibold text-[#71717a]">
                 {currency === 'EGP' ? 'EGP' : '$'}
               </span>
               <input
@@ -80,15 +78,14 @@ export const FixedCostsCard: React.FC = () => {
                     amount: parseFloat(e.target.value) || 0,
                   })
                 }
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg pl-7 pr-2.5 py-1 text-xs font-semibold font-mono-nums text-[#f4f4f5] text-right outline-none focus:border-indigo-500/50"
+                className="w-24 bg-[#18181b] border border-[#27272a] focus:border-emerald-500 rounded-lg px-2.5 py-1 text-xs font-bold font-mono-nums text-right rtl:text-left text-[#f4f4f5] outline-none"
                 placeholder="0"
               />
             </div>
-
             <button
               onClick={() => handleDeleteCost(cost.id)}
-              className="p-1 rounded-lg text-[#71717a] hover:text-rose-400 hover:bg-[#27272a] transition"
-              title="Remove item"
+              className="p-1 rounded-lg text-[#71717a] hover:text-rose-400 hover:bg-[#18181b] transition"
+              title={t('common.delete')}
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -96,19 +93,18 @@ export const FixedCostsCard: React.FC = () => {
         ))}
       </div>
 
-      {/* Add Line Item & Total bar */}
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex items-center justify-between pt-2 border-t border-[#27272a]/60">
         <button
           onClick={handleAddCost}
-          className="flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 font-medium px-2.5 py-1.5 rounded-lg hover:bg-indigo-500/10 transition"
+          className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition py-1"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Add line item</span>
+          <span>{t('calculator.addLineItem')}</span>
         </button>
 
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-[#a1a1aa]">Total Overheads:</span>
-          <span className="font-bold font-mono-nums text-[#f4f4f5]">
+        <div className="text-xs font-mono-nums">
+          <span className="text-[#71717a]">{t('calculator.totalOverheads')} </span>
+          <span className="font-bold text-[#f4f4f5]">
             {formatCurrency(activeProductMetrics.totalFixedCosts, currency)}
           </span>
         </div>

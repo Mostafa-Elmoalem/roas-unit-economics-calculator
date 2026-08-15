@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { CurrencySelector } from './CurrencySelector';
+import { LanguageSelector } from './LanguageSelector';
 import { exportPortfolioToExcel } from '../../lib/excelExport';
 import { exportElementToPDF } from '../../lib/pdfExport';
 import {
@@ -25,6 +27,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenImportModal,
   onOpenAddModal,
 }) => {
+  const { t } = useTranslation();
+
   const {
     projectName,
     setProjectName,
@@ -65,13 +69,13 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-30 bg-[#09090b]/90 backdrop-blur-md border-b border-[#27272a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
+        <div className="flex items-center justify-between h-16 gap-3 sm:gap-4">
           {/* Left: Brand & Editable Project Name */}
           <div className="flex items-center gap-3 min-w-0">
             <div
               onClick={() => setView('dashboard')}
-              className="flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 cursor-pointer hover:bg-emerald-500/20 transition-colors shadow-sm"
-              title="Return to Dashboard"
+              className="flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 cursor-pointer hover:bg-emerald-500/20 transition-colors shadow-sm shrink-0"
+              title={t('common.dashboard')}
             >
               <TrendingUp className="w-5 h-5" />
             </div>
@@ -84,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
                     value={tempTitle}
                     onChange={(e) => setTempTitle(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
-                    className="bg-[#18181b] border border-emerald-500/50 rounded-md px-2.5 py-1 text-sm font-semibold text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 min-w-[220px]"
+                    className="bg-[#18181b] border border-emerald-500/50 rounded-md px-2.5 py-1 text-sm font-semibold text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 min-w-[200px]"
                     autoFocus
                   />
                   <button
@@ -101,18 +105,18 @@ export const Header: React.FC<HeaderProps> = ({
                     setIsEditingTitle(true);
                   }}
                   className="flex items-center gap-2 group cursor-pointer"
-                  title="Click to rename workspace"
+                  title={t('common.edit')}
                 >
-                  <h1 className="text-sm sm:text-base font-semibold text-[#f4f4f5] tracking-tight truncate max-w-[180px] sm:max-w-[320px]">
+                  <h1 className="text-sm sm:text-base font-semibold text-[#f4f4f5] tracking-tight truncate max-w-[150px] sm:max-w-[280px]">
                     {projectName}
                   </h1>
-                  <Edit2 className="w-3.5 h-3.5 text-[#71717a] group-hover:text-emerald-400 transition-colors" />
+                  <Edit2 className="w-3.5 h-3.5 text-[#71717a] group-hover:text-emerald-400 transition-colors shrink-0" />
                 </div>
               )}
             </div>
 
             {/* View switcher buttons */}
-            <div className="hidden md:flex items-center bg-[#18181b] border border-[#27272a] rounded-lg p-0.5 ml-2">
+            <div className="hidden md:flex items-center bg-[#18181b] border border-[#27272a] rounded-lg p-0.5 ml-2 rtl:mr-2 rtl:ml-0">
               <button
                 onClick={() => setView('dashboard')}
                 className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all ${
@@ -122,7 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <LayoutDashboard className="w-3.5 h-3.5" />
-                <span>Dashboard</span>
+                <span>{t('common.dashboard')}</span>
               </button>
               <button
                 onClick={() => setView('calculator')}
@@ -133,28 +137,29 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <Calculator className="w-3.5 h-3.5" />
-                <span>Calculator</span>
+                <span>{t('common.calculator')}</span>
                 {activeProduct && (
                   <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded">
-                    Active
+                    {t('common.active')}
                   </span>
                 )}
               </button>
             </div>
           </div>
 
-          {/* Right: Actions & Tools */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Right: Actions, Language, Currency & Tools */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <LanguageSelector />
             <CurrencySelector />
 
             {/* Import Button */}
             <button
               onClick={onOpenImportModal}
               className="flex items-center gap-1.5 bg-[#18181b] hover:bg-[#27272a] text-[#a1a1aa] hover:text-[#f4f4f5] border border-[#27272a] px-2.5 py-1.5 rounded-lg text-xs font-medium transition"
-              title="Upload Excel or custom CSV"
+              title={t('common.importCSV')}
             >
               <Upload className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="hidden sm:inline">Import CSV / Excel</span>
+              <span className="hidden lg:inline">{t('common.importCSV')}</span>
             </button>
 
             {/* Export buttons */}
@@ -162,20 +167,20 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={handleExportExcel}
                 className="flex items-center gap-1.5 bg-[#18181b] hover:bg-[#27272a] text-[#a1a1aa] hover:text-[#f4f4f5] border border-[#27272a] px-2.5 py-1.5 rounded-lg text-xs font-medium transition"
-                title="Export complete portfolio to Excel (.xlsx)"
+                title={t('common.exportExcel')}
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="hidden xl:inline">Export Excel</span>
+                <span className="hidden xl:inline">{t('common.exportExcel')}</span>
               </button>
 
               <button
                 onClick={handleExportPDF}
                 disabled={isExportingPDF}
                 className="flex items-center gap-1.5 bg-[#18181b] hover:bg-[#27272a] text-[#a1a1aa] hover:text-[#f4f4f5] border border-[#27272a] px-2.5 py-1.5 rounded-lg text-xs font-medium transition disabled:opacity-50"
-                title="Export printable PDF report"
+                title={t('common.exportPDF')}
               >
                 <FileDown className="w-3.5 h-3.5 text-rose-400" />
-                <span className="hidden xl:inline">{isExportingPDF ? 'Exporting...' : 'PDF'}</span>
+                <span className="hidden xl:inline">{isExportingPDF ? t('common.exporting') : t('common.exportPDF')}</span>
               </button>
             </div>
 
@@ -185,18 +190,18 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition hover:shadow-emerald-500/20"
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Add Product</span>
+              <span>{t('common.addProduct')}</span>
             </button>
 
             {/* Reset to Demo */}
             <button
               onClick={() => {
-                if (confirm('Reset workspace to starter demo catalog? Custom changes will be replaced.')) {
+                if (confirm(t('common.resetConfirm'))) {
                   resetToDemoData();
                 }
               }}
               className="p-1.5 rounded-lg text-[#71717a] hover:text-[#f4f4f5] hover:bg-[#18181b] border border-transparent hover:border-[#27272a] transition"
-              title="Reset to default demo data"
+              title={t('common.resetDemo')}
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>

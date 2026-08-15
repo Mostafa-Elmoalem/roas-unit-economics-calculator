@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import confetti from 'canvas-confetti';
 import { X, Plus } from 'lucide-react';
@@ -9,6 +10,7 @@ interface AddProductModalProps {
 }
 
 export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const { addProduct, currency } = useApp();
 
   const [name, setName] = useState('');
@@ -67,9 +69,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
               <Plus className="w-4 h-4 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[#f4f4f5]">Add New Product</h3>
+              <h3 className="text-base font-semibold text-[#f4f4f5]">{t('modals.addProductTitle')}</h3>
               <p className="text-xs text-[#a1a1aa]">
-                Set up initial unit economics, pricing, and campaign metrics
+                {t('modals.addProductDesc')}
               </p>
             </div>
           </div>
@@ -89,25 +91,25 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
             <div className="grid grid-cols-3 gap-3">
               <div className="col-span-2">
                 <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
-                  Product Title *
+                  {t('modals.productNameLabel')}
                 </label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Ultra Comfort Memory Pillow"
+                  placeholder={t('modals.productNamePlaceholder')}
                   className="w-full bg-[#09090b] border border-[#27272a] rounded-xl px-3 py-2 text-xs font-medium text-[#f4f4f5] outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">SKU</label>
+                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">{t('modals.skuLabel')}</label>
                 <input
                   type="text"
                   value={sku}
                   onChange={(e) => setSku(e.target.value)}
-                  placeholder="e.g. PLW-01"
+                  placeholder={t('modals.skuPlaceholder')}
                   className="w-full bg-[#09090b] border border-[#27272a] rounded-xl px-3 py-2 text-xs font-medium text-[#f4f4f5] outline-none focus:border-emerald-500"
                 />
               </div>
@@ -117,7 +119,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
-                  Selling Price ({currency}) *
+                  {t('calculator.sellingPrice')} ({currency}) *
                 </label>
                 <input
                   type="number"
@@ -134,7 +136,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
               <div>
                 <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
-                  COGS / Cost Per Unit ({currency}) *
+                  {t('calculator.cogs')} ({currency}) *
                 </label>
                 <input
                   type="number"
@@ -154,7 +156,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
-                  Number of Units *
+                  {t('calculator.batchUnits')} *
                 </label>
                 <input
                   type="number"
@@ -171,7 +173,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
               <div>
                 <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
-                  Shipping Cost Per Unit ({currency})
+                  {t('calculator.shippingPerUnit')} ({currency})
                 </label>
                 <input
                   type="number"
@@ -190,7 +192,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
-                  Ad Spend Per Unit (CPA) ({currency})
+                  {t('calculator.cpaPerUnit')} ({currency})
                 </label>
                 <input
                   type="number"
@@ -206,7 +208,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
               <div>
                 <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
-                  Fulfillment Rate (%)
+                  {t('calculator.fulfillmentRate')} (%)
                 </label>
                 <input
                   type="number"
@@ -227,13 +229,13 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
               onClick={onClose}
               className="px-4 py-2 rounded-xl text-xs font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a] transition"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition shadow-sm"
             >
-              Create Product & Open Calculator
+              {t('modals.createProductBtn')}
             </button>
           </div>
         </form>

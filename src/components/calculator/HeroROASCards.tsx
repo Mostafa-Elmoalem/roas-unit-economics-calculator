@@ -1,124 +1,133 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { formatROAS } from '../../lib/calculations';
-import { Target, TrendingUp, CheckCircle, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { TrendingUp, ShieldCheck, AlertTriangle } from 'lucide-react';
 
 export const HeroROASCards: React.FC = () => {
-  const { activeProduct, activeProductMetrics } = useApp();
+  const { t } = useTranslation();
+  const { activeProductMetrics } = useApp();
 
-  if (!activeProduct || !activeProductMetrics) return null;
+  if (!activeProductMetrics) return null;
 
-  const isProfitable =
-    activeProductMetrics.breakEvenROAS !== null &&
-    activeProductMetrics.currentROAS >= activeProductMetrics.breakEvenROAS;
+  const isProfitable = activeProductMetrics.isProfitableAdjusted;
+  const beROAS = activeProductMetrics.breakEvenROAS;
+  const currentROAS = activeProductMetrics.currentROAS;
 
-  const roasDiff =
-    activeProductMetrics.breakEvenROAS !== null
-      ? activeProductMetrics.currentROAS - activeProductMetrics.breakEvenROAS
-      : 0;
-
-  const roasPercentageDiff =
-    activeProductMetrics.breakEvenROAS !== null && activeProductMetrics.breakEvenROAS > 0
-      ? (roasDiff / activeProductMetrics.breakEvenROAS) * 100
-      : 0;
+  // Margin of safety percentage
+  const safetyPercent =
+    beROAS && beROAS > 0 ? ((currentROAS - beROAS) / beROAS) * 100 : null;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {/* 1. Break-Even ROAS Hero */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#18181b] to-[#141417] border border-[#27272a] rounded-2xl p-5 sm:p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider">
-            Break-Even ROAS
-          </span>
-          <div className="p-2 rounded-xl bg-[#27272a] text-[#a1a1aa]">
-            <Target className="w-4 h-4" />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* 1. Break-Even ROAS Hero Card */}
+      <div className="relative overflow-hidden bg-[#18181b] border border-[#27272a] hover:border-[#3f3f46] rounded-2xl p-6 transition-all shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider">
+                {t('calculator.heroBEROAS')}
+              </h4>
+              <p className="text-[11px] text-[#71717a]">Zero-profit baseline threshold</p>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-baseline gap-2 mb-2">
-          <span className="text-4xl sm:text-5xl font-extrabold font-mono-nums tracking-tight text-[#f4f4f5]">
-            {formatROAS(activeProductMetrics.breakEvenROAS)}
-          </span>
+        <div className="my-2">
+          <div className="text-4xl sm:text-5xl font-black font-mono-nums tracking-tight text-[#f4f4f5]">
+            {formatROAS(beROAS)}
+          </div>
         </div>
 
-        <p className="text-xs text-[#71717a] mt-1">
-          Minimum return on ad spend required to cover COGS, shipping & fixed costs at 100% fulfillment.
+        <p className="text-xs text-[#a1a1aa] leading-relaxed mb-4">
+          {t('calculator.heroBEROASDesc')}
         </p>
 
-        {activeProductMetrics.adjustedBreakEvenROAS && (
-          <div className="mt-4 pt-3 border-t border-[#27272a]/60 flex items-center justify-between text-xs">
-            <span className="text-[#a1a1aa]">Fulfillment Adjusted BE:</span>
-            <span className="font-bold font-mono-nums text-amber-400">
-              {formatROAS(activeProductMetrics.adjustedBreakEvenROAS)}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center justify-between text-xs pt-3 border-t border-[#27272a]/60">
+          <span className="text-[#a1a1aa]">{t('calculator.heroAdjBEROAS')}</span>
+          <span className="font-bold font-mono-nums text-amber-400">
+            {formatROAS(activeProductMetrics.adjustedBreakEvenROAS)}
+          </span>
+        </div>
       </div>
 
-      {/* 2. Current ROAS Hero */}
+      {/* 2. Current Campaign ROAS Hero Card */}
       <div
-        className={`relative overflow-hidden bg-gradient-to-br from-[#18181b] to-[#141417] border rounded-2xl p-5 sm:p-6 shadow-sm transition-all ${
+        className={`relative overflow-hidden bg-[#18181b] border rounded-2xl p-6 transition-all shadow-sm ${
           isProfitable
-            ? 'border-emerald-500/40 glow-emerald'
-            : 'border-rose-500/40 glow-rose'
+            ? 'border-emerald-500/30 hover:border-emerald-500/50'
+            : 'border-rose-500/30 hover:border-rose-500/50'
         }`}
       >
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider">
-            Current ROAS
-          </span>
-          <div
-            className={`p-2 rounded-xl ${
-              isProfitable
-                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-            }`}
-          >
-            {isProfitable ? (
-              <CheckCircle className="w-4 h-4" />
-            ) : (
-              <ShieldAlert className="w-4 h-4" />
-            )}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div
+              className={`p-2 rounded-xl ${
+                isProfitable
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+              }`}
+            >
+              {isProfitable ? (
+                <ShieldCheck className="w-5 h-5" />
+              ) : (
+                <AlertTriangle className="w-5 h-5" />
+              )}
+            </div>
+            <div>
+              <h4 className="text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider">
+                {t('calculator.heroCurrentROAS')}
+              </h4>
+              <p className="text-[11px] text-[#71717a]">Based on current CPA</p>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-baseline gap-2 mb-2">
-          <span
-            className={`text-4xl sm:text-5xl font-extrabold font-mono-nums tracking-tight ${
-              isProfitable ? 'text-emerald-400' : 'text-rose-400'
-            }`}
-          >
-            {formatROAS(activeProductMetrics.currentROAS)}
-          </span>
-        </div>
-
-        {/* Dynamic Margin of Safety Badge */}
-        <div className="mt-2">
-          {activeProductMetrics.breakEvenROAS === null ? (
-            <div className="inline-flex items-center gap-1 text-xs text-rose-400 font-medium">
-              Negative base unit margin before ads
-            </div>
-          ) : isProfitable ? (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>+{roasPercentageDiff.toFixed(1)}% above break-even</span>
-            </div>
-          ) : (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              <span>{roasPercentageDiff.toFixed(1)}% below break-even</span>
+          {safetyPercent !== null && (
+            <div
+              className={`px-3 py-1 rounded-full text-xs font-bold font-mono-nums ${
+                safetyPercent >= 0
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+              }`}
+            >
+              {safetyPercent >= 0
+                ? t('calculator.aboveBE', { percent: safetyPercent.toFixed(0) })
+                : t('calculator.belowBE', { percent: safetyPercent.toFixed(0) })}
             </div>
           )}
         </div>
 
-        <div className="mt-4 pt-3 border-t border-[#27272a]/60 flex items-center justify-between text-xs">
-          <span className="text-[#a1a1aa]">Status:</span>
-          <span
-            className={`font-semibold ${
+        <div className="my-2">
+          <div
+            className={`text-4xl sm:text-5xl font-black font-mono-nums tracking-tight ${
               isProfitable ? 'text-emerald-400' : 'text-rose-400'
             }`}
           >
-            {isProfitable ? 'Profitable Campaign' : 'Losing Campaign'}
+            {formatROAS(currentROAS)}
+          </div>
+        </div>
+
+        <p className="text-xs text-[#a1a1aa] leading-relaxed mb-4">
+          {beROAS === null ? (
+            <span className="text-rose-400">{t('calculator.negativeBaseMargin')}</span>
+          ) : isProfitable ? (
+            <span className="text-emerald-400">{t('calculator.profitableCampaign')}</span>
+          ) : (
+            <span className="text-rose-400">{t('calculator.losingCampaign')}</span>
+          )}
+        </p>
+
+        <div className="flex items-center justify-between text-xs pt-3 border-t border-[#27272a]/60">
+          <span className="text-[#a1a1aa]">{t('calculator.status')}</span>
+          <span
+            className={`font-bold ${
+              isProfitable ? 'text-emerald-400' : 'text-rose-400'
+            }`}
+          >
+            {isProfitable ? t('calculator.profitableCampaign') : t('calculator.losingCampaign')}
           </span>
         </div>
       </div>
