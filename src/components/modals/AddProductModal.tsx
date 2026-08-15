@@ -60,17 +60,17 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
-      <div className="bg-[#18181b] border border-[#27272a] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs">
+      <div className="bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[#27272a]">
+        <div className="flex items-center justify-between p-5 border-b border-zinc-200 dark:border-[#27272a]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
               <Plus className="w-4 h-4 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[#f4f4f5]">{t('modals.addProductTitle')}</h3>
-              <p className="text-xs text-[#a1a1aa]">
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-[#f4f4f5]">{t('modals.addProductTitle')}</h3>
+              <p className="text-xs text-zinc-500 dark:text-[#a1a1aa]">
                 {t('modals.addProductDesc')}
               </p>
             </div>
@@ -78,7 +78,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a] transition"
+            className="p-1.5 rounded-lg text-zinc-400 dark:text-[#a1a1aa] hover:text-zinc-900 dark:hover:text-[#f4f4f5] hover:bg-zinc-100 dark:hover:bg-[#27272a] transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -90,7 +90,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
             {/* Title & SKU */}
             <div className="grid grid-cols-3 gap-3">
               <div className="col-span-2">
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
+                <label className="block text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] mb-1">
                   {t('modals.productNameLabel')}
                 </label>
                 <input
@@ -99,18 +99,18 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t('modals.productNamePlaceholder')}
-                  className="w-full bg-[#09090b] border border-[#27272a] rounded-xl px-3 py-2 text-xs font-medium text-[#f4f4f5] outline-none focus:border-emerald-500"
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] rounded-xl px-3 py-2 text-xs font-medium text-zinc-900 dark:text-[#f4f4f5] outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">{t('modals.skuLabel')}</label>
+                <label className="block text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] mb-1">{t('modals.skuLabel')}</label>
                 <input
                   type="text"
                   value={sku}
                   onChange={(e) => setSku(e.target.value)}
                   placeholder={t('modals.skuPlaceholder')}
-                  className="w-full bg-[#09090b] border border-[#27272a] rounded-xl px-3 py-2 text-xs font-medium text-[#f4f4f5] outline-none focus:border-emerald-500"
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] rounded-xl px-3 py-2 text-xs font-medium text-zinc-900 dark:text-[#f4f4f5] outline-none focus:border-emerald-500"
                 />
               </div>
             </div>
@@ -118,7 +118,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
             {/* Selling Price & COGS */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
+                <label className="block text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] mb-1">
                   {t('calculator.sellingPrice')} ({currency}) *
                 </label>
                 <input
@@ -130,12 +130,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                   onChange={(e) =>
                     setSellingPrice(e.target.value === '' ? '' : parseFloat(e.target.value))
                   }
-                  className="w-full bg-[#09090b] border border-[#27272a] rounded-xl px-3 py-2 text-xs font-bold font-mono-nums text-[#f4f4f5] outline-none focus:border-emerald-500"
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] rounded-xl px-3 py-2 text-xs font-bold font-mono-nums text-zinc-900 dark:text-[#f4f4f5] outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
+                <label className="block text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] mb-1">
                   {t('calculator.cogs')} ({currency}) *
                 </label>
                 <input
@@ -147,7 +147,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                   onChange={(e) =>
                     setCogs(e.target.value === '' ? '' : parseFloat(e.target.value))
                   }
-                  className="w-full bg-[#09090b] border border-[#27272a] rounded-xl px-3 py-2 text-xs font-bold font-mono-nums text-[#f4f4f5] outline-none focus:border-emerald-500"
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] rounded-xl px-3 py-2 text-xs font-bold font-mono-nums text-zinc-900 dark:text-[#f4f4f5] outline-none focus:border-emerald-500"
                 />
               </div>
             </div>
@@ -155,7 +155,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
             {/* Units & Shipping */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
+                <label className="block text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] mb-1">
                   {t('calculator.batchUnits')} *
                 </label>
                 <input
@@ -167,12 +167,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                   onChange={(e) =>
                     setUnits(e.target.value === '' ? '' : parseInt(e.target.value, 10))
                   }
-                  className="w-full bg-[#09090b] border border-[#27272a] rounded-xl px-3 py-2 text-xs font-semibold font-mono-nums text-[#f4f4f5] outline-none focus:border-emerald-500"
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] rounded-xl px-3 py-2 text-xs font-semibold font-mono-nums text-zinc-900 dark:text-[#f4f4f5] outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
+                <label className="block text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] mb-1">
                   {t('calculator.shippingPerUnit')} ({currency})
                 </label>
                 <input
@@ -183,7 +183,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                   onChange={(e) =>
                     setShippingPerUnit(e.target.value === '' ? '' : parseFloat(e.target.value))
                   }
-                  className="w-full bg-[#09090b] border border-[#27272a] rounded-xl px-3 py-2 text-xs font-semibold font-mono-nums text-[#f4f4f5] outline-none focus:border-emerald-500"
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] rounded-xl px-3 py-2 text-xs font-semibold font-mono-nums text-zinc-900 dark:text-[#f4f4f5] outline-none focus:border-emerald-500"
                 />
               </div>
             </div>
@@ -191,7 +191,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
             {/* Ad Spend & Fulfillment % */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
+                <label className="block text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] mb-1">
                   {t('calculator.cpaPerUnit')} ({currency})
                 </label>
                 <input
@@ -202,12 +202,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                   onChange={(e) =>
                     setAdSpendPerUnit(e.target.value === '' ? '' : parseFloat(e.target.value))
                   }
-                  className="w-full bg-[#09090b] border border-[#27272a] rounded-xl px-3 py-2 text-xs font-semibold font-mono-nums text-[#f4f4f5] outline-none focus:border-emerald-500"
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] rounded-xl px-3 py-2 text-xs font-semibold font-mono-nums text-zinc-900 dark:text-[#f4f4f5] outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#a1a1aa] mb-1">
+                <label className="block text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] mb-1">
                   {t('calculator.fulfillmentRate')} (%)
                 </label>
                 <input
@@ -216,18 +216,18 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                   max="100"
                   value={fulfillmentRate}
                   onChange={(e) => setFulfillmentRate(parseInt(e.target.value, 10) || 80)}
-                  className="w-full bg-[#09090b] border border-[#27272a] rounded-xl px-3 py-2 text-xs font-semibold font-mono-nums text-[#f4f4f5] outline-none focus:border-emerald-500"
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] rounded-xl px-3 py-2 text-xs font-semibold font-mono-nums text-zinc-900 dark:text-[#f4f4f5] outline-none focus:border-emerald-500"
                 />
               </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-[#27272a] bg-[#0f0f11] flex items-center justify-end gap-2.5">
+          <div className="p-4 border-t border-zinc-200 dark:border-[#27272a] bg-zinc-50 dark:bg-[#0f0f11] flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a] transition"
+              className="px-4 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] hover:text-zinc-900 dark:hover:text-[#f4f4f5] hover:bg-zinc-200 dark:hover:bg-[#27272a] transition"
             >
               {t('common.cancel')}
             </button>

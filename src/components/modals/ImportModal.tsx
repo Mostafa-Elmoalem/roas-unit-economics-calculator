@@ -80,19 +80,19 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
-      <div className="bg-[#18181b] border border-[#27272a] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs">
+      <div className="bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[#27272a]">
+        <div className="flex items-center justify-between p-5 border-b border-zinc-200 dark:border-[#27272a]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
               <Upload className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[#f4f4f5]">
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-[#f4f4f5]">
                 {t('modals.importTitle')}
               </h3>
-              <p className="text-xs text-[#a1a1aa]">
+              <p className="text-xs text-zinc-500 dark:text-[#a1a1aa]">
                 {t('modals.importDesc')}
               </p>
             </div>
@@ -100,7 +100,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a] transition"
+            className="p-1.5 rounded-lg text-zinc-400 dark:text-[#a1a1aa] hover:text-zinc-900 dark:hover:text-[#f4f4f5] hover:bg-zinc-100 dark:hover:bg-[#27272a] transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -109,14 +109,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
         {/* Modal Body */}
         <div className="p-5 overflow-y-auto space-y-4 flex-1">
           {/* Download Sample Template Banner */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-[#09090b] border border-[#27272a] text-xs">
-            <div className="flex items-center gap-2 text-[#a1a1aa]">
-              <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] text-xs">
+            <div className="flex items-center gap-2 text-zinc-600 dark:text-[#a1a1aa]">
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>{t('modals.templateBanner')}</span>
             </div>
             <button
               onClick={handleDownloadSample}
-              className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-semibold transition shrink-0"
+              className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-semibold transition shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
               <span>{t('modals.downloadTemplate')}</span>
@@ -135,7 +135,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
             className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
               dragOver
                 ? 'border-emerald-500 bg-emerald-500/5'
-                : 'border-[#27272a] hover:border-[#3f3f46] bg-[#09090b]/60'
+                : 'border-zinc-300 dark:border-[#27272a] hover:border-zinc-400 dark:hover:border-[#3f3f46] bg-zinc-50/70 dark:bg-[#09090b]/60'
             }`}
           >
             <input
@@ -151,14 +151,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
             />
 
             <div className="flex flex-col items-center justify-center gap-3">
-              <div className="p-3 rounded-full bg-[#18181b] border border-[#27272a] text-emerald-400">
+              <div className="p-3 rounded-full bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] text-emerald-600 dark:text-emerald-400 shadow-xs">
                 <Upload className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#f4f4f5]">
+                <p className="text-sm font-semibold text-zinc-900 dark:text-[#f4f4f5]">
                   {fileName ? fileName : t('modals.dropzoneText')}
                 </p>
-                <p className="text-xs text-[#71717a] mt-0.5">
+                <p className="text-xs text-zinc-500 dark:text-[#71717a] mt-0.5">
                   {t('modals.dropzoneSubtext')}
                 </p>
               </div>
@@ -167,8 +167,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
 
           {/* Parsing Errors (if any) */}
           {errors.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 space-y-1">
-              <div className="flex items-center gap-1.5 font-semibold text-rose-400">
+            <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-xs text-rose-700 dark:text-rose-300 space-y-1">
+              <div className="flex items-center gap-1.5 font-semibold text-rose-600 dark:text-rose-400">
                 <AlertCircle className="w-4 h-4" />
                 <span>Notice while parsing:</span>
               </div>
@@ -184,19 +184,19 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
           {parsedProducts.length > 0 && (
             <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
+                <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>{t('modals.detectedProducts', { count: parsedProducts.length })}</span>
                 </div>
 
                 {/* Append vs Replace Mode */}
-                <div className="flex items-center bg-[#09090b] border border-[#27272a] rounded-lg p-0.5 text-xs">
+                <div className="flex items-center bg-zinc-100 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] rounded-lg p-0.5 text-xs">
                   <button
                     onClick={() => setImportMode('append')}
                     className={`px-2.5 py-0.5 rounded font-medium transition ${
                       importMode === 'append'
-                        ? 'bg-[#27272a] text-[#f4f4f5]'
-                        : 'text-[#71717a]'
+                        ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
+                        : 'text-zinc-500 dark:text-[#71717a]'
                     }`}
                   >
                     {t('modals.append')}
@@ -205,8 +205,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
                     onClick={() => setImportMode('replace')}
                     className={`px-2.5 py-0.5 rounded font-medium transition ${
                       importMode === 'replace'
-                        ? 'bg-rose-500/20 text-rose-300'
-                        : 'text-[#71717a]'
+                        ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300 font-semibold shadow-xs'
+                        : 'text-zinc-500 dark:text-[#71717a]'
                     }`}
                   >
                     {t('modals.replaceAll')}
@@ -214,9 +214,9 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
                 </div>
               </div>
 
-              <div className="border border-[#27272a] rounded-xl overflow-hidden max-h-48 overflow-y-auto">
+              <div className="border border-zinc-200 dark:border-[#27272a] rounded-xl overflow-hidden max-h-48 overflow-y-auto">
                 <table className="w-full text-left rtl:text-right text-xs">
-                  <thead className="bg-[#09090b] text-[#71717a] border-b border-[#27272a] sticky top-0">
+                  <thead className="bg-zinc-50 dark:bg-[#09090b] text-zinc-500 dark:text-[#71717a] border-b border-zinc-200 dark:border-[#27272a] sticky top-0">
                     <tr>
                       <th className="py-2 px-3">{t('dashboard.tableProductName')}</th>
                       <th className="py-2 px-3">{t('dashboard.tablePrice')}</th>
@@ -225,10 +225,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
                       <th className="py-2 px-3">{t('calculator.shippingLegend')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#27272a]">
+                  <tbody className="divide-y divide-zinc-200 dark:divide-[#27272a]">
                     {parsedProducts.map((p, idx) => (
-                      <tr key={idx} className="hover:bg-[#202024]/50">
-                        <td className="py-2 px-3 font-medium text-[#f4f4f5] truncate max-w-[180px]">
+                      <tr key={idx} className="hover:bg-zinc-50 dark:hover:bg-[#202024]/50">
+                        <td className="py-2 px-3 font-medium text-zinc-900 dark:text-[#f4f4f5] truncate max-w-[180px]">
                           {p.name}
                         </td>
                         <td className="py-2 px-3 font-mono-nums">
@@ -251,10 +251,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[#27272a] bg-[#0f0f11] flex items-center justify-end gap-2.5">
+        <div className="p-4 border-t border-zinc-200 dark:border-[#27272a] bg-zinc-50 dark:bg-[#0f0f11] flex items-center justify-end gap-2.5">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#27272a] transition"
+            className="px-4 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] hover:text-zinc-900 dark:hover:text-[#f4f4f5] hover:bg-zinc-200 dark:hover:bg-[#27272a] transition"
           >
             {t('common.cancel')}
           </button>

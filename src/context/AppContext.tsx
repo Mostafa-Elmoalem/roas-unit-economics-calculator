@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import type { Product, Currency, ViewMode, PortfolioMetrics, CalculatedMetrics } from '../types';
+import type { Product, Currency, ViewMode, PortfolioMetrics, CalculatedMetrics, ThemeMode } from '../types';
 import { INITIAL_PRODUCTS } from '../lib/mockData';
 import { calculatePortfolioMetrics, calculateProductMetrics } from '../lib/calculations';
 
@@ -14,12 +14,16 @@ interface AppContextType {
   activeProduct: Product | undefined;
   portfolioMetrics: PortfolioMetrics;
   activeProductMetrics: CalculatedMetrics | undefined;
+  theme: ThemeMode;
+  effectiveTheme: 'dark' | 'light';
 
   setProjectName: (name: string) => void;
   setCurrency: (currency: Currency) => void;
   setActiveProductId: (id: string | null) => void;
   setView: (view: ViewMode) => void;
   setSearchQuery: (query: string) => void;
+  setTheme: (theme: ThemeMode) => void;
+  toggleTheme: () => void;
 
   addProduct: (productData?: Partial<Product>) => Product;
   updateProduct: (id: string, updates: Partial<Product>) => void;
@@ -37,6 +41,27 @@ export const STORAGE_KEYS = {
   PRODUCTS: 'roas_calc_products',
   ACTIVE_PRODUCT_ID: 'roas_calc_active_id',
   VIEW: 'roas_calc_view',
+  THEME: 'roas_calc_theme',
+};
+
+const getSystemTheme = (): 'dark' | 'light' => {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return 'dark';
+};
+
+const applyThemeToDOM = (effective: 'dark' | 'light') => {
+  if (typeof document !== 'undefined') {
+    const root = document.documentElement;
+    if (effective === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
+    }
+  }
 };
 
 // Dual-layer Storage Utility (Synchronous LocalStorage + SessionStorage)
@@ -114,13 +139,44 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     Storage.get(STORAGE_KEYS.VIEW, 'dashboard' as ViewMode)
   );
 
+  const [theme, setThemeState] = useState<ThemeMode>(() =>
+    Storage.get(STORAGE_KEYS.THEME, 'system' as ThemeMode)
+  );
+
+  const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(getSystemTheme);
+
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Use refs to always have the latest synchronous state for pagehide/unload
-  const stateRef = useRef({ projectName, currency, products, activeProductId, view });
+  // Effective theme resolving 'system' to OS preference
+  const effectiveTheme: 'dark' | 'light' = useMemo(() => {
+    if (theme === 'system') return systemTheme;
+    return theme;
+  }, [theme, systemTheme]);
+
+  // Listen to OS system color scheme changes
   useEffect(() => {
-    stateRef.current = { projectName, currency, products, activeProductId, view };
-  }, [projectName, currency, products, activeProductId, view]);
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setSystemTheme(e.matches ? 'dark' : 'light');
+    };
+
+    setSystemTheme(mediaQuery.matches ? 'dark' : 'light');
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Apply effective theme to HTML element
+  useEffect(() => {
+    applyThemeToDOM(effectiveTheme);
+  }, [effectiveTheme]);
+
+  // Use refs to always have the latest synchronous state for pagehide/unload
+  const stateRef = useRef({ projectName, currency, products, activeProductId, view, theme });
+  useEffect(() => {
+    stateRef.current = { projectName, currency, products, activeProductId, view, theme };
+  }, [projectName, currency, products, activeProductId, view, theme]);
 
   // Synchronous flush handler
   const flushToStorage = useCallback(() => {
@@ -130,6 +186,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     Storage.set(STORAGE_KEYS.PRODUCTS, s.products);
     Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, s.activeProductId);
     Storage.set(STORAGE_KEYS.VIEW, s.view);
+    Storage.set(STORAGE_KEYS.THEME, s.theme);
   }, []);
 
   // Listen to beforeunload, pagehide, and visibilitychange to prevent data loss on reload/tab switch
@@ -176,6 +233,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     Storage.set(STORAGE_KEYS.VIEW, view);
   }, [view]);
 
+  useEffect(() => {
+    Storage.set(STORAGE_KEYS.THEME, theme);
+  }, [theme]);
+
   // 3. Derived active product and metrics
   const activeProduct = useMemo(() => {
     return products.find((p) => p.id === activeProductId) || products[0];
@@ -209,6 +270,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const setView = (v: ViewMode) => {
     setViewState(v);
     Storage.set(STORAGE_KEYS.VIEW, v);
+  };
+
+  const setTheme = (t: ThemeMode) => {
+    setThemeState(t);
+    Storage.set(STORAGE_KEYS.THEME, t);
+  };
+
+  const toggleTheme = () => {
+    const nextTheme: ThemeMode =
+      effectiveTheme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
   };
 
   // Actions
@@ -364,11 +436,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         activeProduct,
         portfolioMetrics,
         activeProductMetrics,
+        theme,
+        effectiveTheme,
         setProjectName,
         setCurrency,
         setActiveProductId,
         setView,
         setSearchQuery,
+        setTheme,
+        toggleTheme,
         addProduct,
         updateProduct,
         deleteProduct,

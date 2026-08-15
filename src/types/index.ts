@@ -92,3 +92,4 @@ export interface SensitivityScenario {
 }
 
 export type ViewMode = 'dashboard' | 'calculator';
+export type ThemeMode = 'system' | 'dark' | 'light';

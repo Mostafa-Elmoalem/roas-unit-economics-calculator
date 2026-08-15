@@ -13,25 +13,25 @@ export const UnitBreakdownCard: React.FC = () => {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {/* 1. Max Break-Even CPA */}
-      <div className="bg-[#18181b] border border-[#27272a] rounded-2xl p-4 shadow-sm">
-        <div className="flex items-center gap-2 text-[#71717a] mb-2">
-          <Target className="w-3.5 h-3.5 text-indigo-400" />
+      <div className="bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded-2xl p-4 shadow-xs transition-colors duration-200">
+        <div className="flex items-center gap-2 text-zinc-500 dark:text-[#71717a] mb-2">
+          <Target className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
           <span className="text-[11px] font-semibold uppercase tracking-wider">
             {t('calculator.maxBECPA')}
           </span>
         </div>
-        <div className="text-xl sm:text-2xl font-bold font-mono-nums text-[#f4f4f5]">
+        <div className="text-xl sm:text-2xl font-bold font-mono-nums text-zinc-900 dark:text-[#f4f4f5]">
           {formatCurrency(activeProductMetrics.breakEvenCPA, currency)}
         </div>
-        <div className="text-[10px] text-[#71717a] mt-1">
+        <div className="text-[10px] text-zinc-400 dark:text-[#71717a] mt-1">
           Adj: {formatCurrency(activeProductMetrics.adjustedBreakEvenCPA, currency)}
         </div>
       </div>
 
       {/* 2. Profit / Unit (Adjusted) */}
-      <div className="bg-[#18181b] border border-[#27272a] rounded-2xl p-4 shadow-sm">
-        <div className="flex items-center gap-2 text-[#71717a] mb-2">
-          <Coins className="w-3.5 h-3.5 text-emerald-400" />
+      <div className="bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded-2xl p-4 shadow-xs transition-colors duration-200">
+        <div className="flex items-center gap-2 text-zinc-500 dark:text-[#71717a] mb-2">
+          <Coins className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           <span className="text-[11px] font-semibold uppercase tracking-wider">
             {t('calculator.profitPerUnitAdj')}
           </span>
@@ -39,21 +39,21 @@ export const UnitBreakdownCard: React.FC = () => {
         <div
           className={`text-xl sm:text-2xl font-bold font-mono-nums ${
             activeProductMetrics.adjustedProfitPerOrderedUnit >= 0
-              ? 'text-emerald-400'
-              : 'text-rose-400'
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-rose-600 dark:text-rose-400'
           }`}
         >
           {formatCurrency(activeProductMetrics.adjustedProfitPerOrderedUnit, currency)}
         </div>
-        <div className="text-[10px] text-[#71717a] mt-1">
+        <div className="text-[10px] text-zinc-400 dark:text-[#71717a] mt-1">
           Raw: {formatCurrency(activeProductMetrics.rawNetProfitPerUnit, currency)}
         </div>
       </div>
 
       {/* 3. Total Profit (Adjusted) */}
-      <div className="bg-[#18181b] border border-[#27272a] rounded-2xl p-4 shadow-sm">
-        <div className="flex items-center gap-2 text-[#71717a] mb-2">
-          <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+      <div className="bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded-2xl p-4 shadow-xs transition-colors duration-200">
+        <div className="flex items-center gap-2 text-zinc-500 dark:text-[#71717a] mb-2">
+          <DollarSign className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           <span className="text-[11px] font-semibold uppercase tracking-wider">
             {t('calculator.totalProfitAdj')}
           </span>
@@ -61,21 +61,21 @@ export const UnitBreakdownCard: React.FC = () => {
         <div
           className={`text-xl sm:text-2xl font-bold font-mono-nums ${
             activeProductMetrics.adjustedTotalProfit >= 0
-              ? 'text-emerald-400'
-              : 'text-rose-400'
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-rose-600 dark:text-rose-400'
           }`}
         >
           {formatCurrency(activeProductMetrics.adjustedTotalProfit, currency)}
         </div>
-        <div className="text-[10px] text-[#71717a] mt-1">
+        <div className="text-[10px] text-zinc-400 dark:text-[#71717a] mt-1">
           Raw: {formatCurrency(activeProductMetrics.rawTotalProfit, currency)}
         </div>
       </div>
 
       {/* 4. Net Margin % */}
-      <div className="bg-[#18181b] border border-[#27272a] rounded-2xl p-4 shadow-sm">
-        <div className="flex items-center gap-2 text-[#71717a] mb-2">
-          <Percent className="w-3.5 h-3.5 text-amber-400" />
+      <div className="bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded-2xl p-4 shadow-xs transition-colors duration-200">
+        <div className="flex items-center gap-2 text-zinc-500 dark:text-[#71717a] mb-2">
+          <Percent className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
           <span className="text-[11px] font-semibold uppercase tracking-wider">
             {t('calculator.netMarginPercent')}
           </span>
@@ -83,13 +83,13 @@ export const UnitBreakdownCard: React.FC = () => {
         <div
           className={`text-xl sm:text-2xl font-bold font-mono-nums ${
             activeProductMetrics.adjustedNetMarginPercent >= 0
-              ? 'text-emerald-400'
-              : 'text-rose-400'
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-rose-600 dark:text-rose-400'
           }`}
         >
           {activeProductMetrics.adjustedNetMarginPercent.toFixed(1)}%
         </div>
-        <div className="text-[10px] text-[#71717a] mt-1">
+        <div className="text-[10px] text-zinc-400 dark:text-[#71717a] mt-1">
           Raw: {activeProductMetrics.rawNetMarginPercent.toFixed(1)}%
         </div>
       </div>
