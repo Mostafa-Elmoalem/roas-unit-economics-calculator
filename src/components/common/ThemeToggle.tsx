@@ -1,18 +1,19 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { tokens } from '../../theme/tokens';
 import { Sun, Moon, Monitor } from 'lucide-react';
 
 export const ThemeToggle: React.FC = () => {
   const { theme, effectiveTheme, setTheme } = useApp();
 
   return (
-    <div className="relative flex items-center bg-zinc-100 dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded-lg p-0.5 shadow-xs">
+    <div className={`relative flex items-center ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-lg p-0.5 shadow-xs`}>
       <button
         onClick={() => setTheme('light')}
         className={`p-1.5 rounded-md transition-all ${
           theme === 'light' || (theme === 'system' && effectiveTheme === 'light')
             ? 'bg-white text-amber-500 shadow-xs'
-            : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+            : `${tokens.text.muted} hover:${tokens.text.primary}`
         }`}
         title="Light Mode"
       >
@@ -24,7 +25,7 @@ export const ThemeToggle: React.FC = () => {
         className={`p-1.5 rounded-md transition-all ${
           theme === 'dark' || (theme === 'system' && effectiveTheme === 'dark')
             ? 'bg-[#27272a] text-indigo-400 shadow-xs'
-            : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+            : `${tokens.text.muted} hover:${tokens.text.primary}`
         }`}
         title="Dark Mode"
       >
@@ -36,7 +37,7 @@ export const ThemeToggle: React.FC = () => {
         className={`p-1.5 rounded-md transition-all ${
           theme === 'system'
             ? 'bg-white dark:bg-[#27272a] text-emerald-500 shadow-xs'
-            : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+            : `${tokens.text.muted} hover:${tokens.text.primary}`
         }`}
         title="Auto (System Browser Default)"
       >

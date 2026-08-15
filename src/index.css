@@ -7,11 +7,38 @@
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-arabic: 'Cairo', 'Plus Jakarta Sans', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+
+    /* Theme Tokens: Light Mode Defaults */
+    --color-bg-app: #f8fafc;
+    --color-bg-surface: #ffffff;
+    --color-bg-subtle: #f8fafc;
+    --color-bg-input: #f8fafc;
+    --color-border-default: #e2e8f0;
+    --color-border-subtle: #f1f5f9;
+    --color-text-primary: #09090b;
+    --color-text-secondary: #52525b;
+    --color-text-muted: #a1a1aa;
+  }
+
+  html.dark {
+    /* Theme Tokens: Dark Mode Defaults */
+    --color-bg-app: #09090b;
+    --color-bg-surface: #18181b;
+    --color-bg-subtle: #121214;
+    --color-bg-input: #09090b;
+    --color-border-default: #27272a;
+    --color-border-subtle: #1f1f23;
+    --color-text-primary: #f4f4f5;
+    --color-text-secondary: #a1a1aa;
+    --color-text-muted: #71717a;
   }
 
   body {
     font-family: var(--font-sans);
+    background-color: var(--color-bg-app);
+    color: var(--color-text-primary);
     overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   html[dir="rtl"] body {
