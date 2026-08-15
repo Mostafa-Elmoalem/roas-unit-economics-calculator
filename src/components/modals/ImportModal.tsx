@@ -5,7 +5,15 @@ import { parseCustomCSVOrExcel, generateSampleCSV } from '../../lib/csvParser';
 import type { Product } from '../../types';
 import { formatCurrency } from '../../lib/calculations';
 import {
-  X,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '../ui/dialog';
+import { Button } from '../ui/button';
+import {
   Upload,
   FileSpreadsheet,
   Download,
@@ -28,8 +36,6 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
   const [errors, setErrors] = useState<string[]>([]);
   const [fileName, setFileName] = useState<string>('');
   const [importMode, setImportMode] = useState<'append' | 'replace'>('append');
-
-  if (!isOpen) return null;
 
   const handleFileProcess = async (file: File) => {
     setFileName(file.name);
@@ -73,43 +79,31 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
     if (parsedProducts.length > 0) {
       importProducts(parsedProducts, importMode === 'replace');
       onClose();
-      // Reset
       setParsedProducts([]);
       setFileName('');
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs">
-      <div className="bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 transition-colors">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col" onClose={onClose}>
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-zinc-200 dark:border-[#27272a]">
+        <DialogHeader onClose={onClose}>
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
               <Upload className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-zinc-900 dark:text-[#f4f4f5]">
-                {t('modals.importTitle')}
-              </h3>
-              <p className="text-xs text-zinc-500 dark:text-[#a1a1aa]">
-                {t('modals.importDesc')}
-              </p>
+              <DialogTitle>{t('modals.importTitle')}</DialogTitle>
+              <DialogDescription>{t('modals.importDesc')}</DialogDescription>
             </div>
           </div>
-
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 dark:text-[#a1a1aa] hover:text-zinc-900 dark:hover:text-[#f4f4f5] hover:bg-zinc-100 dark:hover:bg-[#27272a] transition"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        </DialogHeader>
 
         {/* Modal Body */}
-        <div className="p-5 overflow-y-auto space-y-4 flex-1">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
           {/* Download Sample Template Banner */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] text-xs">
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] text-xs">
             <div className="flex items-center gap-2 text-zinc-600 dark:text-[#a1a1aa]">
               <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>{t('modals.templateBanner')}</span>
@@ -251,22 +245,20 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-zinc-200 dark:border-[#27272a] bg-zinc-50 dark:bg-[#0f0f11] flex items-center justify-end gap-2.5">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] hover:text-zinc-900 dark:hover:text-[#f4f4f5] hover:bg-zinc-200 dark:hover:bg-[#27272a] transition"
-          >
+        <DialogFooter>
+          <Button variant="outline" size="sm" onClick={onClose}>
             {t('common.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
             onClick={handleConfirmImport}
             disabled={parsedProducts.length === 0}
-            className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
           >
             {parsedProducts.length > 0 ? t('modals.importBtn', { count: parsedProducts.length }) : t('common.importCSV')}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
