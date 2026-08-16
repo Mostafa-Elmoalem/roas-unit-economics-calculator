@@ -16,7 +16,7 @@ export const FixedCostsCard: React.FC = () => {
   const handleAddCost = () => {
     const newItem: FixedCostItem = {
       id: `fc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      name: 'Custom Overhead',
+      name: t('calculator.customOverhead'),
       amount: 500,
     };
     updateProduct(activeProduct.id, {
@@ -64,7 +64,7 @@ export const FixedCostsCard: React.FC = () => {
               value={cost.name}
               onChange={(e) => handleUpdateCost(cost.id, { name: e.target.value })}
               className={`flex-1 bg-transparent text-xs font-medium ${tokens.text.primary} outline-none px-2`}
-              placeholder="Overhead name"
+              placeholder={t('calculator.overheadNamePlaceholder')}
             />
             <div className="flex items-center gap-1">
               <span className={`text-xs font-semibold ${tokens.text.muted}`}>

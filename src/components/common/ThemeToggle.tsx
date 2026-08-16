@@ -1,9 +1,11 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { tokens } from '../../theme/tokens';
 import { Sun, Moon, Monitor } from 'lucide-react';
 
 export const ThemeToggle: React.FC = () => {
+  const { t } = useTranslation();
   const { theme, effectiveTheme, setTheme } = useApp();
 
   return (
@@ -15,7 +17,7 @@ export const ThemeToggle: React.FC = () => {
             ? 'bg-white text-amber-500 shadow-xs'
             : `${tokens.text.muted} hover:${tokens.text.primary}`
         }`}
-        title="Light Mode"
+        title={t('theme.light')}
       >
         <Sun className="w-3.5 h-3.5" />
       </button>
@@ -27,7 +29,7 @@ export const ThemeToggle: React.FC = () => {
             ? 'bg-[#27272a] text-indigo-400 shadow-xs'
             : `${tokens.text.muted} hover:${tokens.text.primary}`
         }`}
-        title="Dark Mode"
+        title={t('theme.dark')}
       >
         <Moon className="w-3.5 h-3.5" />
       </button>
@@ -39,7 +41,7 @@ export const ThemeToggle: React.FC = () => {
             ? 'bg-white dark:bg-[#27272a] text-emerald-500 shadow-xs'
             : `${tokens.text.muted} hover:${tokens.text.primary}`
         }`}
-        title="Auto (System Browser Default)"
+        title={t('theme.system')}
       >
         <Monitor className="w-3.5 h-3.5" />
       </button>

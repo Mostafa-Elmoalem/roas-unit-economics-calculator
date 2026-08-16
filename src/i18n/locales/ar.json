@@ -28,6 +28,12 @@
     "arabic": "العربية",
     "english": "English"
   },
+  "theme": {
+    "light": "الوضع النهاري",
+    "dark": "الوضع الليلي",
+    "system": "تلقائي (حسب المتصفح)",
+    "toggle": "تبديل مظهر الألوان"
+  },
   "dashboard": {
     "heroTag": "محرك اقتصاديات الوحدة والأداء الإعلاني",
     "heroTitle": "مصفوفة الأرباح ونقطة التعادل (Break-Even ROAS)",
@@ -59,6 +65,9 @@
     "margin": "الهامش"
   },
   "calculator": {
+    "noProductSelected": "لم يتم تحديد أي منتج",
+    "noProductDesc": "قم بإنشاء منتج جديد أو اختر منتجاً من لوحة التحكم.",
+    "backToDashboard": "العودة إلى لوحة التحكم",
     "backToProducts": "العودة إلى المنتجات",
     "exportProductCSV": "تصدير CSV",
     "deleteProduct": "حذف المنتج",
@@ -78,6 +87,8 @@
     "fixedCostsTitle": "2. المصاريف الثابتة وتكاليف الحملة",
     "fixedCostPerUnit": "/قطعة",
     "addLineItem": "إضافة بند تكلفة",
+    "customOverhead": "مصروف تشغيلي مخصص",
+    "overheadNamePlaceholder": "اسم المصروف",
     "totalOverheads": "إجمالي المصاريف الثابتة:",
     "adSpendTitle": "3. الإنفاق الإعلاني وتكلفة الاستحواذ",
     "cpaMode": "تكلفة الطلب (CPA)",
@@ -89,9 +100,11 @@
     "acrossTotalUnits": "موزعة على {{count}} قطعة",
     "maxAllowableCPA": "أقصى تكلفة CPA مسموحة لتفادي الخسارة:",
     "heroBEROAS": "نقطة التعادل (Break-Even ROAS)",
+    "zeroProfitBaseline": "حد الصفر ربح / نقطة التعادل الأساسية",
     "heroBEROASDesc": "أدنى عائد إعلاني مطلوب لتغطية تكلفة المنتج والشحن والمصاريف الثابتة عند تسليم 100%.",
     "heroAdjBEROAS": "نقطة التعادل بعد احتساب نسبة التسليم:",
     "heroCurrentROAS": "العائد الإعلاني الحالي (ROAS)",
+    "basedOnCurrentCPA": "محسوب بناءً على الـ CPA الحالي",
     "aboveBE": "+{{percent}}% أعلى من نقطة التعادل",
     "belowBE": "{{percent}}% أقل من نقطة التعادل",
     "negativeBaseMargin": "هامش الربح الأساسي سالب قبل احتساب الإعلانات",
@@ -135,7 +148,7 @@
   "modals": {
     "addProductTitle": "إضافة منتج جديد",
     "addProductDesc": "إعداد اقتصاديات الوحدة والتسعير والتكاليف الأولية للحملة",
-    "productNameLabel": "اسم المنتج *",
+    "productNameLabel": "اسم المنتج",
     "productNamePlaceholder": "مثال: سيروم العناية بالبشرة 50 مل",
     "skuLabel": "رمز المنتج (SKU)",
     "skuPlaceholder": "مثال: SRM-01",
@@ -146,13 +159,16 @@
     "downloadTemplate": "قالب_المنتجات.csv",
     "dropzoneText": "اضغط لاختيار ملف أو اسحب الملف وأفلته هنا",
     "dropzoneSubtext": "يدعم صيغ CSV و XLSX و XLS",
+    "parseNotice": "ملاحظات أثناء قراءة الملف:",
     "append": "إضافة للمنتجات الحالية",
     "replaceAll": "استبدال الكل",
     "detectedProducts": "تم التعرف بنجاح على {{count}} منتجات",
     "importBtn": "استيراد {{count}} منتجات",
     "deleteTitle": "حذف المنتج",
-    "deleteSubtitle": "تأكيد الحذف النهائي",
-    "itemToDelete": "المنتج المراد حذفه:",
+    "deleteSub": "تأكيد الحذف النهائي",
+    "deletePrompt": "هل أنت متأكد من رغبتك في حذف",
+    "thisItem": "هذا المنتج",
+    "confirmDeleteBtn": "نعم، احذف المنتج",
     "deleteWarning": "سيؤدي هذا الإجراء إلى حذف هذا المنتج نهائياً بجميع مصاريفه الثابتة ومؤشراته الإعلانية. لا يمكن التراجع عن هذا الإجراء."
   },
   "footer": {

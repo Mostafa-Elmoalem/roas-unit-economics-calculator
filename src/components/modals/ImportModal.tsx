@@ -164,7 +164,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
             <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-xs text-rose-700 dark:text-rose-300 space-y-1">
               <div className="flex items-center gap-1.5 font-semibold text-rose-600 dark:text-rose-400">
                 <AlertCircle className="w-4 h-4" />
-                <span>Notice while parsing:</span>
+                <span>{t('modals.parseNotice')}</span>
               </div>
               <ul className="list-disc pl-5 rtl:pr-5 rtl:pl-0 space-y-0.5 text-[11px]">
                 {errors.slice(0, 3).map((err, i) => (

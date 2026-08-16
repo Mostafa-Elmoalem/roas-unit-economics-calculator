@@ -28,6 +28,12 @@
     "arabic": "العربية",
     "english": "English"
   },
+  "theme": {
+    "light": "Light Mode",
+    "dark": "Dark Mode",
+    "system": "Auto (System Browser Default)",
+    "toggle": "Toggle Color Theme"
+  },
   "dashboard": {
     "heroTag": "Unit Economics & Performance Engine",
     "heroTitle": "Break-Even ROAS & Profit Matrix",
@@ -59,6 +65,9 @@
     "margin": "Margin"
   },
   "calculator": {
+    "noProductSelected": "No product selected",
+    "noProductDesc": "Create a product or select one from the dashboard catalog.",
+    "backToDashboard": "Back to Dashboard",
     "backToProducts": "Back to products",
     "exportProductCSV": "Export CSV",
     "deleteProduct": "Delete",
@@ -78,6 +87,8 @@
     "fixedCostsTitle": "2. Fixed Overheads & Campaign Costs",
     "fixedCostPerUnit": "/unit",
     "addLineItem": "Add line item",
+    "customOverhead": "Custom Overhead",
+    "overheadNamePlaceholder": "Overhead name",
     "totalOverheads": "Total Overheads:",
     "adSpendTitle": "3. Ad Spend & Paid Acquisition",
     "cpaMode": "CPA / Unit",
@@ -89,9 +100,11 @@
     "acrossTotalUnits": "Across {{count}} total units",
     "maxAllowableCPA": "Break-Even Max Allowable CPA:",
     "heroBEROAS": "Break-Even ROAS",
+    "zeroProfitBaseline": "Zero-profit baseline threshold",
     "heroBEROASDesc": "Minimum return on ad spend required to cover COGS, shipping & fixed costs at 100% fulfillment.",
     "heroAdjBEROAS": "Fulfillment Adjusted BE:",
     "heroCurrentROAS": "Current ROAS",
+    "basedOnCurrentCPA": "Based on current CPA",
     "aboveBE": "+{{percent}}% above break-even",
     "belowBE": "{{percent}}% below break-even",
     "negativeBaseMargin": "Negative base unit margin before ads",
@@ -135,7 +148,7 @@
   "modals": {
     "addProductTitle": "Add New Product",
     "addProductDesc": "Set up initial unit economics, pricing, and campaign metrics",
-    "productNameLabel": "Product Title *",
+    "productNameLabel": "Product Title",
     "productNamePlaceholder": "e.g. Ultra Comfort Memory Pillow",
     "skuLabel": "SKU",
     "skuPlaceholder": "e.g. PLW-01",
@@ -146,13 +159,16 @@
     "downloadTemplate": "Template.csv",
     "dropzoneText": "Click to browse or drag & drop files",
     "dropzoneSubtext": "Supports CSV, XLSX, and XLS formats",
+    "parseNotice": "Notice while parsing:",
     "append": "Append",
     "replaceAll": "Replace All",
     "detectedProducts": "Successfully detected {{count}} products",
     "importBtn": "Import {{count}} Products",
     "deleteTitle": "Delete Product",
-    "deleteSubtitle": "Confirm permanent removal",
-    "itemToDelete": "Item to delete:",
+    "deleteSub": "Confirm permanent removal",
+    "deletePrompt": "Are you sure you want to delete",
+    "thisItem": "this product",
+    "confirmDeleteBtn": "Yes, Delete Product",
     "deleteWarning": "This will permanently delete this product and all of its associated overhead expenses and campaign metrics. This action cannot be undone."
   },
   "footer": {

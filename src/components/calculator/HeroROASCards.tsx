@@ -33,7 +33,7 @@ export const HeroROASCards: React.FC = () => {
               <h4 className={`text-xs font-semibold ${tokens.text.secondary} uppercase tracking-wider`}>
                 {t('calculator.heroBEROAS')}
               </h4>
-              <p className={`text-[11px] ${tokens.text.muted}`}>Zero-profit baseline threshold</p>
+              <p className={`text-[11px] ${tokens.text.muted}`}>{t('calculator.zeroProfitBaseline')}</p>
             </div>
           </div>
         </div>
@@ -81,7 +81,7 @@ export const HeroROASCards: React.FC = () => {
               <h4 className={`text-xs font-semibold ${tokens.text.secondary} uppercase tracking-wider`}>
                 {t('calculator.heroCurrentROAS')}
               </h4>
-              <p className={`text-[11px] ${tokens.text.muted}`}>Based on current CPA</p>
+              <p className={`text-[11px] ${tokens.text.muted}`}>{t('calculator.basedOnCurrentCPA')}</p>
             </div>
           </div>
 

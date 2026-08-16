@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { ProductHeader } from './ProductHeader';
 import { UnitEconomicsCard } from './UnitEconomicsCard';
@@ -9,32 +10,43 @@ import { UnitBreakdownCard } from './UnitBreakdownCard';
 import { ComparativeMatrixCard } from './ComparativeMatrixCard';
 import { SensitivityMatrixCard } from './SensitivityMatrixCard';
 import { CostBreakdownVisual } from './CostBreakdownVisual';
+import { Button } from '../ui/button';
+import { tokens } from '../../theme/tokens';
+import { Plus, ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface ProductCalculatorProps {
   onOpenAddModal: () => void;
 }
 
 export const ProductCalculator: React.FC<ProductCalculatorProps> = ({ onOpenAddModal }) => {
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.language === 'ar';
   const { activeProduct, products, setView } = useApp();
 
   if (!activeProduct || products.length === 0) {
     return (
-      <div className="py-16 text-center space-y-4">
-        <h3 className="text-lg font-semibold text-[#f4f4f5]">No product selected</h3>
-        <p className="text-xs text-[#a1a1aa]">Create a product or select one from the dashboard.</p>
-        <div className="flex items-center justify-center gap-3">
-          <button
+      <div className={`py-16 text-center space-y-4 ${tokens.card.base} p-8 max-w-lg mx-auto`}>
+        <h3 className={`text-lg font-semibold ${tokens.text.primary}`}>{t('calculator.noProductSelected')}</h3>
+        <p className={`text-xs ${tokens.text.muted}`}>{t('calculator.noProductDesc')}</p>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setView('dashboard')}
-            className="px-4 py-2 rounded-xl bg-[#18181b] border border-[#27272a] text-xs font-medium text-[#f4f4f5]"
+            className="flex items-center gap-1.5"
           >
-            Back to Dashboard
-          </button>
-          <button
+            {isRtl ? <ArrowRight className="w-3.5 h-3.5" /> : <ArrowLeft className="w-3.5 h-3.5" />}
+            <span>{t('calculator.backToDashboard')}</span>
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
             onClick={onOpenAddModal}
-            className="px-4 py-2 rounded-xl bg-emerald-500 text-black text-xs font-bold"
+            className="flex items-center gap-1.5"
           >
-            Add Product
-          </button>
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>{t('common.addProduct')}</span>
+          </Button>
         </div>
       </div>
     );
