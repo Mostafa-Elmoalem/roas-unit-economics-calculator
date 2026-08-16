@@ -2,6 +2,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { formatROAS } from '../../lib/calculations';
+import { Badge } from '../ui/badge';
+import { tokens } from '../../theme/tokens';
 import { TrendingUp, ShieldCheck, AlertTriangle } from 'lucide-react';
 
 export const HeroROASCards: React.FC = () => {
@@ -21,34 +23,34 @@ export const HeroROASCards: React.FC = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* 1. Break-Even ROAS Hero Card */}
-      <div className="relative overflow-hidden bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] hover:border-zinc-300 dark:hover:border-[#3f3f46] rounded-2xl p-6 transition-all shadow-xs">
+      <div className={`relative overflow-hidden ${tokens.card.base} ${tokens.border.hover} p-6 transition-all`}>
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+          <div className="flex items-center gap-2.5">
+            <div className={`p-2 rounded-xl ${tokens.status.accent.bg} ${tokens.status.accent.text} ${tokens.status.accent.border} border`}>
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs font-semibold text-zinc-500 dark:text-[#a1a1aa] uppercase tracking-wider">
+              <h4 className={`text-xs font-semibold ${tokens.text.secondary} uppercase tracking-wider`}>
                 {t('calculator.heroBEROAS')}
               </h4>
-              <p className="text-[11px] text-zinc-400 dark:text-[#71717a]">Zero-profit baseline threshold</p>
+              <p className={`text-[11px] ${tokens.text.muted}`}>Zero-profit baseline threshold</p>
             </div>
           </div>
         </div>
 
         <div className="my-2">
-          <div className="text-4xl sm:text-5xl font-black font-mono-nums tracking-tight text-zinc-900 dark:text-[#f4f4f5]">
+          <div className={`text-4xl sm:text-5xl font-black font-mono-nums tracking-tight ${tokens.text.primary}`}>
             {formatROAS(beROAS)}
           </div>
         </div>
 
-        <p className="text-xs text-zinc-600 dark:text-[#a1a1aa] leading-relaxed mb-4">
+        <p className={`text-xs ${tokens.text.secondary} leading-relaxed mb-4`}>
           {t('calculator.heroBEROASDesc')}
         </p>
 
-        <div className="flex items-center justify-between text-xs pt-3 border-t border-zinc-100 dark:border-[#27272a]/60">
-          <span className="text-zinc-500 dark:text-[#a1a1aa]">{t('calculator.heroAdjBEROAS')}</span>
-          <span className="font-bold font-mono-nums text-amber-600 dark:text-amber-400">
+        <div className={`flex items-center justify-between text-xs pt-3 border-t ${tokens.border.subtle}`}>
+          <span className={tokens.text.secondary}>{t('calculator.heroAdjBEROAS')}</span>
+          <span className={`font-bold font-mono-nums ${tokens.status.warning.text}`}>
             {formatROAS(activeProductMetrics.adjustedBreakEvenROAS)}
           </span>
         </div>
@@ -56,19 +58,17 @@ export const HeroROASCards: React.FC = () => {
 
       {/* 2. Current Campaign ROAS Hero Card */}
       <div
-        className={`relative overflow-hidden bg-white dark:bg-[#18181b] border rounded-2xl p-6 transition-all shadow-xs ${
-          isProfitable
-            ? 'border-emerald-500/40 hover:border-emerald-500/60'
-            : 'border-rose-500/40 hover:border-rose-500/60'
-        }`}
+        className={`relative overflow-hidden transition-all ${
+          isProfitable ? tokens.card.profitHero : tokens.card.lossHero
+        } p-6`}
       >
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <div
-              className={`p-2 rounded-xl ${
+              className={`p-2 rounded-xl border ${
                 isProfitable
-                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                  : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                  ? `${tokens.status.profit.bg} ${tokens.status.profit.text} ${tokens.status.profit.border}`
+                  : `${tokens.status.loss.bg} ${tokens.status.loss.text} ${tokens.status.loss.border}`
               }`}
             >
               {isProfitable ? (
@@ -78,53 +78,47 @@ export const HeroROASCards: React.FC = () => {
               )}
             </div>
             <div>
-              <h4 className="text-xs font-semibold text-zinc-500 dark:text-[#a1a1aa] uppercase tracking-wider">
+              <h4 className={`text-xs font-semibold ${tokens.text.secondary} uppercase tracking-wider`}>
                 {t('calculator.heroCurrentROAS')}
               </h4>
-              <p className="text-[11px] text-zinc-400 dark:text-[#71717a]">Based on current CPA</p>
+              <p className={`text-[11px] ${tokens.text.muted}`}>Based on current CPA</p>
             </div>
           </div>
 
           {safetyPercent !== null && (
-            <div
-              className={`px-3 py-1 rounded-full text-xs font-bold font-mono-nums ${
-                safetyPercent >= 0
-                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30'
-                  : 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30'
-              }`}
-            >
+            <Badge variant={safetyPercent >= 0 ? 'success' : 'destructive'} className="font-mono-nums">
               {safetyPercent >= 0
                 ? t('calculator.aboveBE', { percent: safetyPercent.toFixed(0) })
                 : t('calculator.belowBE', { percent: safetyPercent.toFixed(0) })}
-            </div>
+            </Badge>
           )}
         </div>
 
         <div className="my-2">
           <div
             className={`text-4xl sm:text-5xl font-black font-mono-nums tracking-tight ${
-              isProfitable ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+              isProfitable ? tokens.status.profit.text : tokens.status.loss.text
             }`}
           >
             {formatROAS(currentROAS)}
           </div>
         </div>
 
-        <p className="text-xs text-zinc-600 dark:text-[#a1a1aa] leading-relaxed mb-4">
+        <p className={`text-xs ${tokens.text.secondary} leading-relaxed mb-4`}>
           {beROAS === null ? (
-            <span className="text-rose-600 dark:text-rose-400">{t('calculator.negativeBaseMargin')}</span>
+            <span className={tokens.status.loss.text}>{t('calculator.negativeBaseMargin')}</span>
           ) : isProfitable ? (
-            <span className="text-emerald-600 dark:text-emerald-400">{t('calculator.profitableCampaign')}</span>
+            <span className={tokens.status.profit.text}>{t('calculator.profitableCampaign')}</span>
           ) : (
-            <span className="text-rose-600 dark:text-rose-400">{t('calculator.losingCampaign')}</span>
+            <span className={tokens.status.loss.text}>{t('calculator.losingCampaign')}</span>
           )}
         </p>
 
-        <div className="flex items-center justify-between text-xs pt-3 border-t border-zinc-100 dark:border-[#27272a]/60">
-          <span className="text-zinc-500 dark:text-[#a1a1aa]">{t('calculator.status')}</span>
+        <div className={`flex items-center justify-between text-xs pt-3 border-t ${tokens.border.subtle}`}>
+          <span className={tokens.text.secondary}>{t('calculator.status')}</span>
           <span
             className={`font-bold ${
-              isProfitable ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+              isProfitable ? tokens.status.profit.text : tokens.status.loss.text
             }`}
           >
             {isProfitable ? t('calculator.profitableCampaign') : t('calculator.losingCampaign')}

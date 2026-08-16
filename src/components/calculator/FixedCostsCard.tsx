@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { formatCurrency } from '../../lib/calculations';
 import type { FixedCostItem } from '../../types';
+import { Button } from '../ui/button';
+import { tokens } from '../../theme/tokens';
 import { Building2, Plus, Trash2 } from 'lucide-react';
 
 export const FixedCostsCard: React.FC = () => {
@@ -35,19 +37,19 @@ export const FixedCostsCard: React.FC = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded-2xl p-5 sm:p-6 shadow-xs space-y-5 transition-colors duration-200">
-      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-[#27272a] pb-3">
+    <div className={`${tokens.card.base} p-5 sm:p-6 space-y-5`}>
+      <div className={`flex items-center justify-between border-b ${tokens.border.default} pb-3`}>
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+          <div className={`p-1.5 rounded-lg ${tokens.status.accent.bg} ${tokens.status.accent.text} ${tokens.status.accent.border} border`}>
             <Building2 className="w-4 h-4" />
           </div>
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-[#f4f4f5] tracking-tight">
+          <h3 className={`text-sm font-semibold ${tokens.text.primary} tracking-tight`}>
             {t('calculator.fixedCostsTitle')}
           </h3>
         </div>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] text-[11px] text-zinc-600 dark:text-[#a1a1aa] font-mono-nums">
+        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${tokens.bg.toggleTrack} border ${tokens.border.default} text-[11px] ${tokens.text.secondary} font-mono-nums`}>
           <span>{formatCurrency(activeProductMetrics.fixedCostPerUnit, currency)}</span>
-          <span className="text-zinc-400 dark:text-[#71717a]">{t('calculator.fixedCostPerUnit')}</span>
+          <span className={tokens.text.muted}>{t('calculator.fixedCostPerUnit')}</span>
         </div>
       </div>
 
@@ -55,17 +57,17 @@ export const FixedCostsCard: React.FC = () => {
         {activeProduct.fixedCosts.map((cost) => (
           <div
             key={cost.id}
-            className="flex items-center gap-2 bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-[#27272a] rounded-xl p-2 sm:p-2.5 transition focus-within:border-emerald-500/50"
+            className={`flex items-center gap-2 ${tokens.bg.input} border ${tokens.border.default} rounded-xl p-2 sm:p-2.5 transition focus-within:border-emerald-500/50`}
           >
             <input
               type="text"
               value={cost.name}
               onChange={(e) => handleUpdateCost(cost.id, { name: e.target.value })}
-              className="flex-1 bg-transparent text-xs font-medium text-zinc-900 dark:text-[#f4f4f5] outline-none px-2"
+              className={`flex-1 bg-transparent text-xs font-medium ${tokens.text.primary} outline-none px-2`}
               placeholder="Overhead name"
             />
             <div className="flex items-center gap-1">
-              <span className="text-xs font-semibold text-zinc-400 dark:text-[#71717a]">
+              <span className={`text-xs font-semibold ${tokens.text.muted}`}>
                 {currency === 'EGP' ? 'EGP' : '$'}
               </span>
               <input
@@ -78,13 +80,13 @@ export const FixedCostsCard: React.FC = () => {
                     amount: parseFloat(e.target.value) || 0,
                   })
                 }
-                className="w-24 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] focus:border-emerald-500 rounded-lg px-2.5 py-1 text-xs font-bold font-mono-nums text-right rtl:text-left text-zinc-900 dark:text-[#f4f4f5] outline-none shadow-xs"
+                className={`w-24 ${tokens.bg.inputInner} border ${tokens.border.default} focus:border-emerald-500 rounded-lg px-2.5 py-1 text-xs font-bold font-mono-nums text-right rtl:text-left ${tokens.text.primary} outline-none shadow-xs`}
                 placeholder="0"
               />
             </div>
             <button
               onClick={() => handleDeleteCost(cost.id)}
-              className="p-1 rounded-lg text-zinc-400 dark:text-[#71717a] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-[#18181b] transition"
+              className={`p-1 rounded-lg ${tokens.buttons.ghost} hover:text-rose-600 dark:hover:text-rose-400`}
               title={t('common.delete')}
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -93,18 +95,20 @@ export const FixedCostsCard: React.FC = () => {
         ))}
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t border-zinc-200 dark:border-[#27272a]/60">
-        <button
+      <div className={`flex items-center justify-between pt-2 border-t ${tokens.border.subtle}`}>
+        <Button
+          variant="link"
+          size="xs"
           onClick={handleAddCost}
-          className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition py-1"
+          className="flex items-center gap-1 text-xs font-semibold"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>{t('calculator.addLineItem')}</span>
-        </button>
+        </Button>
 
         <div className="text-xs font-mono-nums">
-          <span className="text-zinc-500 dark:text-[#71717a]">{t('calculator.totalOverheads')} </span>
-          <span className="font-bold text-zinc-900 dark:text-[#f4f4f5]">
+          <span className={tokens.text.secondary}>{t('calculator.totalOverheads')} </span>
+          <span className={`font-bold ${tokens.text.primary}`}>
             {formatCurrency(activeProductMetrics.totalFixedCosts, currency)}
           </span>
         </div>
