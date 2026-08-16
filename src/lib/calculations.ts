@@ -4,9 +4,23 @@ export function calculateProductMetrics(product: Product): CalculatedMetrics {
   const units = Math.max(1, product.units || 1);
   const sellingPrice = Math.max(0, product.sellingPrice || 0);
   const cogs = Math.max(0, product.cogs || 0);
-  const shippingPerUnit = Math.max(0, product.shippingPerUnit || 0);
   const fulfillmentRate = Math.min(100, Math.max(0, product.fulfillmentRate ?? 80));
   const fulfillmentRatio = fulfillmentRate / 100;
+
+  // Shipping Cost Calculation: Flat vs. Subsidized / Split
+  const isSubsidized = product.shippingMode === 'subsidized';
+  const courierCost = Math.max(0, product.courierShippingCost || 0);
+  const customerFee = Math.max(0, product.customerShippingFee || 0);
+
+  // For delivered order: merchant pays (courier - customer fee)
+  const effectiveDeliveredShippingCost = isSubsidized
+    ? Math.max(0, courierCost - customerFee)
+    : Math.max(0, product.shippingPerUnit || 0);
+
+  // For returned/failed order: merchant loses full courier cost (customer paid 0)
+  const effectiveReturnedShippingCost = isSubsidized
+    ? courierCost
+    : Math.max(0, product.shippingPerUnit || 0);
 
   // Fixed Costs
   const totalFixedCosts = (product.fixedCosts || []).reduce(
@@ -27,7 +41,7 @@ export function calculateProductMetrics(product: Product): CalculatedMetrics {
   }
 
   // --- 1. Raw Metrics (100% Fulfillment) ---
-  const grossMargin = sellingPrice - cogs - shippingPerUnit;
+  const grossMargin = sellingPrice - cogs - effectiveDeliveredShippingCost;
   const grossMarginPercent = sellingPrice > 0 ? (grossMargin / sellingPrice) * 100 : 0;
 
   const breakEvenCPA = grossMargin - fixedCostPerUnit;
@@ -50,7 +64,12 @@ export function calculateProductMetrics(product: Product): CalculatedMetrics {
 
   const adjustedRealizedRevenue = adjustedDeliveredUnits * sellingPrice;
   const adjustedRealizedCOGS = adjustedDeliveredUnits * cogs;
-  const adjustedTotalShippingSpent = units * shippingPerUnit; // paid for all dispatched units
+
+  // Realized Total Shipping Spent: (delivered * merchant share) + (failed * full courier fee)
+  const adjustedTotalShippingSpent =
+    adjustedDeliveredUnits * effectiveDeliveredShippingCost +
+    adjustedFailedUnits * effectiveReturnedShippingCost;
+
   const adjustedTotalAdSpend = totalAdSpend;
 
   const adjustedTotalProfit =
@@ -68,16 +87,20 @@ export function calculateProductMetrics(product: Product): CalculatedMetrics {
   const adjustedNetMarginPercent =
     adjustedRealizedRevenue > 0 ? (adjustedTotalProfit / adjustedRealizedRevenue) * 100 : 0;
 
-  // Adjusted Break-Even CPA
+  // Adjusted Break-Even CPA: factoring in delivered shipping + failed shipping loss per unit
+  const weightedShippingPerUnit =
+    fulfillmentRatio * effectiveDeliveredShippingCost +
+    (1 - fulfillmentRatio) * effectiveReturnedShippingCost;
+
   const adjustedBreakEvenCPA =
-    fulfillmentRatio * (sellingPrice - cogs) - shippingPerUnit - fixedCostPerUnit;
+    fulfillmentRatio * (sellingPrice - cogs) - weightedShippingPerUnit - fixedCostPerUnit;
 
   const adjustedBreakEvenROAS =
     adjustedBreakEvenCPA > 0
       ? (fulfillmentRatio * sellingPrice) / adjustedBreakEvenCPA
       : null;
 
-  const adjustedFailedShippingLoss = adjustedFailedUnits * shippingPerUnit;
+  const adjustedFailedShippingLoss = adjustedFailedUnits * effectiveReturnedShippingCost;
   const isProfitableAdjusted = adjustedTotalProfit >= 0;
 
   const marginOfSafetyAdjustedROAS =
@@ -101,6 +124,8 @@ export function calculateProductMetrics(product: Product): CalculatedMetrics {
     rawNetMarginPercent,
     isProfitableRaw,
     marginOfSafetyROAS,
+    effectiveDeliveredShippingCost,
+    effectiveReturnedShippingCost,
     adjustedDeliveredUnits,
     adjustedFailedUnits,
     adjustedRealizedRevenue,

@@ -3,13 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { formatCurrency } from '../../lib/calculations';
 import { tokens } from '../../theme/tokens';
-import { Boxes, Truck, Percent, Package } from 'lucide-react';
+import { Boxes, Truck, Percent, Package, Split } from 'lucide-react';
 
 export const UnitEconomicsCard: React.FC = () => {
   const { t } = useTranslation();
   const { activeProduct, activeProductMetrics, updateProduct, currency } = useApp();
 
   if (!activeProduct || !activeProductMetrics) return null;
+
+  const isSubsidized = activeProduct.shippingMode === 'subsidized';
+  const courierCost = activeProduct.courierShippingCost ?? activeProduct.shippingPerUnit ?? 90;
+  const customerFee = activeProduct.customerShippingFee ?? 60;
+  const merchantShare = Math.max(0, courierCost - customerFee);
 
   const getFulfillmentColor = (rate: number) => {
     if (rate >= 85) return tokens.status.profit.text;
@@ -105,7 +110,7 @@ export const UnitEconomicsCard: React.FC = () => {
         </div>
 
         {/* Number of Units */}
-        <div>
+        <div className="sm:col-span-2">
           <label className={`block text-xs font-medium ${tokens.text.secondary} mb-1.5`}>
             {t('calculator.batchUnits')}
           </label>
@@ -127,30 +132,150 @@ export const UnitEconomicsCard: React.FC = () => {
             />
           </div>
         </div>
+      </div>
 
-        {/* Shipping Per Unit */}
-        <div>
-          <label className={`block text-xs font-medium ${tokens.text.secondary} mb-1.5`}>
-            {t('calculator.shippingPerUnit')} ({currency})
-          </label>
-          <div className="relative">
-            <Truck className={`w-3.5 h-3.5 ${tokens.text.muted} absolute left-3.5 rtl:right-3.5 rtl:left-auto top-1/2 -translate-y-1/2`} />
-            <input
-              type="number"
-              inputMode="decimal"
-              step="any"
-              min="0"
-              value={activeProduct.shippingPerUnit || ''}
-              onChange={(e) =>
+      {/* Shipping Model Configuration Section */}
+      <div className={`p-4 rounded-xl ${tokens.bg.surfaceSubtle} border ${tokens.border.default} space-y-3.5`}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Truck className={`w-4 h-4 ${tokens.status.profit.text}`} />
+            <span className={`text-xs font-semibold ${tokens.text.primary}`}>
+              {t('calculator.shippingPerUnit')}
+            </span>
+          </div>
+
+          {/* Shipping Mode Selector */}
+          <div className={`flex items-center ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-lg p-0.5 text-xs`}>
+            <button
+              onClick={() => updateProduct(activeProduct.id, { shippingMode: 'flat' })}
+              className={`px-2.5 py-1 rounded-md font-medium transition cursor-pointer ${
+                !isSubsidized
+                  ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
+                  : `${tokens.text.secondary} hover:${tokens.text.primary}`
+              }`}
+            >
+              {t('calculator.shippingModeFlat')}
+            </button>
+            <button
+              onClick={() =>
                 updateProduct(activeProduct.id, {
-                  shippingPerUnit: parseFloat(e.target.value) || 0,
+                  shippingMode: 'subsidized',
+                  courierShippingCost: activeProduct.courierShippingCost || activeProduct.shippingPerUnit || 90,
+                  customerShippingFee: activeProduct.customerShippingFee || 60,
                 })
               }
-              className={`w-full ${tokens.bg.input} border ${tokens.border.default} ${tokens.border.focus} rounded-xl pl-9 rtl:pr-9 rtl:pl-3.5 pr-3.5 py-2.5 sm:py-2 text-sm sm:text-xs font-semibold font-mono-nums ${tokens.text.primary} transition`}
-              placeholder="5.00"
-            />
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-medium transition cursor-pointer ${
+                isSubsidized
+                  ? 'bg-white dark:bg-[#27272a] text-emerald-600 dark:text-emerald-400 font-bold shadow-xs'
+                  : `${tokens.text.secondary} hover:${tokens.text.primary}`
+              }`}
+            >
+              <Split className="w-3 h-3" />
+              <span>{t('calculator.shippingModeSubsidized')}</span>
+            </button>
           </div>
         </div>
+
+        {/* Flat Mode Input */}
+        {!isSubsidized ? (
+          <div>
+            <div className="relative">
+              <span className={`absolute left-3.5 rtl:right-3.5 rtl:left-auto top-1/2 -translate-y-1/2 text-xs font-semibold ${tokens.text.muted}`}>
+                {currency === 'EGP' ? 'EGP' : '$'}
+              </span>
+              <input
+                type="number"
+                inputMode="decimal"
+                step="any"
+                min="0"
+                value={activeProduct.shippingPerUnit || ''}
+                onChange={(e) =>
+                  updateProduct(activeProduct.id, {
+                    shippingPerUnit: parseFloat(e.target.value) || 0,
+                  })
+                }
+                className={`w-full ${tokens.bg.input} border ${tokens.border.default} ${tokens.border.focus} rounded-xl pl-9 rtl:pr-9 rtl:pl-3.5 pr-3.5 py-2.5 sm:py-2 text-sm sm:text-xs font-semibold font-mono-nums ${tokens.text.primary} transition`}
+                placeholder="5.00"
+              />
+            </div>
+          </div>
+        ) : (
+          /* Subsidized Dual-Cost Inputs */
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className={`block text-[11px] font-medium ${tokens.text.secondary} mb-1`}>
+                  {t('calculator.courierShippingCost')} ({currency})
+                </label>
+                <div className="relative">
+                  <span className={`absolute left-3 rtl:right-3 rtl:left-auto top-1/2 -translate-y-1/2 text-xs font-semibold ${tokens.text.muted}`}>
+                    {currency === 'EGP' ? 'EGP' : '$'}
+                  </span>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    step="any"
+                    min="0"
+                    value={courierCost || ''}
+                    onChange={(e) =>
+                      updateProduct(activeProduct.id, {
+                        courierShippingCost: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    className={`w-full ${tokens.bg.input} border ${tokens.border.default} focus:border-emerald-500 rounded-xl pl-8 rtl:pr-8 rtl:pl-3 pr-3 py-2 text-xs font-bold font-mono-nums ${tokens.text.primary} outline-none transition`}
+                    placeholder="90"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={`block text-[11px] font-medium ${tokens.text.secondary} mb-1`}>
+                  {t('calculator.customerShippingFee')} ({currency})
+                </label>
+                <div className="relative">
+                  <span className={`absolute left-3 rtl:right-3 rtl:left-auto top-1/2 -translate-y-1/2 text-xs font-semibold ${tokens.text.muted}`}>
+                    {currency === 'EGP' ? 'EGP' : '$'}
+                  </span>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    step="any"
+                    min="0"
+                    value={customerFee || ''}
+                    onChange={(e) =>
+                      updateProduct(activeProduct.id, {
+                        customerShippingFee: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    className={`w-full ${tokens.bg.input} border ${tokens.border.default} focus:border-emerald-500 rounded-xl pl-8 rtl:pr-8 rtl:pl-3 pr-3 py-2 text-xs font-bold font-mono-nums ${tokens.text.primary} outline-none transition`}
+                    placeholder="60"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Live Dual Impact Calculation Indicators */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-mono-nums text-xs">
+              <div className={`p-2.5 rounded-lg ${tokens.status.profit.bg} border ${tokens.status.profit.border}`}>
+                <span className={`block text-[10px] ${tokens.status.profit.text} font-sans`}>
+                  {t('calculator.merchantSubsidizedShare')}:
+                </span>
+                <span className={`font-bold ${tokens.status.profit.text}`}>
+                  {formatCurrency(merchantShare, currency)} / طلب مُسلَّم
+                </span>
+              </div>
+
+              <div className={`p-2.5 rounded-lg ${tokens.status.loss.bg} border ${tokens.status.loss.border}`}>
+                <span className={`block text-[10px] ${tokens.status.loss.text} font-sans`}>
+                  {t('calculator.returnLossShare')}:
+                </span>
+                <span className={`font-bold ${tokens.status.loss.text}`}>
+                  -{formatCurrency(courierCost, currency)} / طلب مرتجع
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Fulfillment Rate Slider */}

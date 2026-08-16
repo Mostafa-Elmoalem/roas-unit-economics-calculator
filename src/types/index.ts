@@ -14,6 +14,9 @@ export interface Product {
   cogs: number;
   units: number;
   shippingPerUnit: number;
+  shippingMode?: 'flat' | 'subsidized';
+  courierShippingCost?: number; // Total actual courier fee (e.g. 90 EGP)
+  customerShippingFee?: number; // What the customer is charged (e.g. 60 EGP)
   fulfillmentRate: number; // 0 - 100
   adSpendPerUnit: number; // CPA
   totalAdSpend: number;
@@ -42,6 +45,8 @@ export interface CalculatedMetrics {
   marginOfSafetyROAS: number; // Current ROAS - BE ROAS
 
   // Fulfillment Adjusted Metrics
+  effectiveDeliveredShippingCost: number;
+  effectiveReturnedShippingCost: number;
   adjustedDeliveredUnits: number;
   adjustedFailedUnits: number;
   adjustedRealizedRevenue: number;
