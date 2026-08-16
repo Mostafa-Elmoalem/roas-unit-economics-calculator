@@ -18,14 +18,14 @@ const AppContent: React.FC = () => {
 
   return (
     <div className={`min-h-screen ${tokens.bg.app} ${tokens.text.primary} flex flex-col selection:bg-emerald-500/25 selection:text-emerald-600 dark:selection:text-emerald-300 transition-colors duration-200`}>
-      {/* Top Fixed Header */}
+      {/* Fluid Header */}
       <Header
         onOpenImportModal={() => setIsImportModalOpen(true)}
         onOpenAddModal={() => setIsAddModalOpen(true)}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      {/* Fluid Main Content Area */}
+      <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8 transition-all">
         {view === 'dashboard' ? (
           <MainDashboard
             onOpenAddModal={() => setIsAddModalOpen(true)}
@@ -36,9 +36,9 @@ const AppContent: React.FC = () => {
         )}
       </main>
 
-      {/* Footer */}
+      {/* Fluid Footer */}
       <footer className={`border-t ${tokens.border.default} ${tokens.bg.footer} py-6 text-xs ${tokens.text.muted} transition-colors duration-200`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
             <span className={`${tokens.text.secondary} font-medium`}>

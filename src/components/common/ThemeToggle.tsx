@@ -9,10 +9,10 @@ export const ThemeToggle: React.FC = () => {
   const { theme, effectiveTheme, setTheme } = useApp();
 
   return (
-    <div className={`relative flex items-center ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-lg p-0.5 shadow-xs`}>
+    <div className={`relative flex items-center ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-xl p-0.5 shadow-2xs`}>
       <button
         onClick={() => setTheme('light')}
-        className={`p-1.5 rounded-md transition-all ${
+        className={`p-1.5 rounded-lg transition-all cursor-pointer ${
           theme === 'light' || (theme === 'system' && effectiveTheme === 'light')
             ? 'bg-white text-amber-500 shadow-xs'
             : `${tokens.text.muted} hover:${tokens.text.primary}`
@@ -24,7 +24,7 @@ export const ThemeToggle: React.FC = () => {
 
       <button
         onClick={() => setTheme('dark')}
-        className={`p-1.5 rounded-md transition-all ${
+        className={`p-1.5 rounded-lg transition-all cursor-pointer ${
           theme === 'dark' || (theme === 'system' && effectiveTheme === 'dark')
             ? 'bg-[#27272a] text-indigo-400 shadow-xs'
             : `${tokens.text.muted} hover:${tokens.text.primary}`
@@ -36,7 +36,7 @@ export const ThemeToggle: React.FC = () => {
 
       <button
         onClick={() => setTheme('system')}
-        className={`p-1.5 rounded-md transition-all ${
+        className={`p-1.5 rounded-lg transition-all cursor-pointer ${
           theme === 'system'
             ? 'bg-white dark:bg-[#27272a] text-emerald-500 shadow-xs'
             : `${tokens.text.muted} hover:${tokens.text.primary}`

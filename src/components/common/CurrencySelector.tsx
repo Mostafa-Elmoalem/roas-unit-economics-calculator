@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { tokens } from '../../theme/tokens';
 import type { Currency } from '../../types';
 import { DollarSign, ChevronDown } from 'lucide-react';
 
@@ -19,20 +20,20 @@ export const CurrencySelector: React.FC = () => {
 
   return (
     <div className="relative inline-block">
-      <div className="flex items-center gap-1 bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] hover:border-zinc-300 dark:hover:border-[#3f3f46] rounded-lg px-2.5 py-1.5 transition-colors shadow-xs">
-        <DollarSign className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+      <div className={`flex items-center gap-1 ${tokens.bg.surface} border ${tokens.border.default} ${tokens.border.hover} rounded-xl px-2.5 py-1.5 transition-colors shadow-2xs`}>
+        <DollarSign className={`w-3.5 h-3.5 ${tokens.status.profit.text} shrink-0`} />
         <select
           value={currency}
           onChange={(e) => setCurrency(e.target.value as Currency)}
-          className="bg-transparent text-xs font-semibold text-zinc-900 dark:text-[#f4f4f5] outline-none cursor-pointer appearance-none pr-4 rtl:pl-4 rtl:pr-0"
+          className={`bg-transparent text-xs font-semibold ${tokens.text.primary} outline-none cursor-pointer appearance-none pr-4 rtl:pl-4 rtl:pr-0`}
         >
           {CURRENCIES.map((c) => (
-            <option key={c.code} value={c.code} className="bg-white dark:bg-[#18181b] text-zinc-900 dark:text-[#f4f4f5]">
+            <option key={c.code} value={c.code} className={`${tokens.bg.surface} ${tokens.text.primary}`}>
               {c.label}
             </option>
           ))}
         </select>
-        <ChevronDown className="w-3 h-3 text-zinc-400 dark:text-[#71717a] absolute right-2 rtl:left-2 rtl:right-auto pointer-events-none" />
+        <ChevronDown className={`w-3 h-3 ${tokens.text.muted} absolute right-2 rtl:left-2 rtl:right-auto pointer-events-none`} />
       </div>
     </div>
   );
