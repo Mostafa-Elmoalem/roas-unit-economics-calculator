@@ -37,8 +37,8 @@ export const FixedCostsCard: React.FC = () => {
   };
 
   return (
-    <div className={`${tokens.card.base} p-5 sm:p-6 space-y-5`}>
-      <div className={`flex items-center justify-between border-b ${tokens.border.default} pb-3`}>
+    <div className={`${tokens.card.base} p-4 sm:p-6 space-y-4 sm:space-y-5`}>
+      <div className={`flex flex-wrap items-center justify-between border-b ${tokens.border.default} pb-3 gap-2`}>
         <div className="flex items-center gap-2">
           <div className={`p-1.5 rounded-lg ${tokens.status.accent.bg} ${tokens.status.accent.text} ${tokens.status.accent.border} border`}>
             <Building2 className="w-4 h-4" />
@@ -63,7 +63,7 @@ export const FixedCostsCard: React.FC = () => {
               type="text"
               value={cost.name}
               onChange={(e) => handleUpdateCost(cost.id, { name: e.target.value })}
-              className={`flex-1 bg-transparent text-xs font-medium ${tokens.text.primary} outline-none px-2`}
+              className={`flex-1 bg-transparent text-sm sm:text-xs font-medium ${tokens.text.primary} outline-none px-2`}
               placeholder={t('calculator.overheadNamePlaceholder')}
             />
             <div className="flex items-center gap-1">
@@ -72,6 +72,7 @@ export const FixedCostsCard: React.FC = () => {
               </span>
               <input
                 type="number"
+                inputMode="decimal"
                 step="any"
                 min="0"
                 value={cost.amount || ''}
@@ -80,13 +81,13 @@ export const FixedCostsCard: React.FC = () => {
                     amount: parseFloat(e.target.value) || 0,
                   })
                 }
-                className={`w-24 ${tokens.bg.inputInner} border ${tokens.border.default} focus:border-emerald-500 rounded-lg px-2.5 py-1 text-xs font-bold font-mono-nums text-right rtl:text-left ${tokens.text.primary} outline-none shadow-xs`}
+                className={`w-24 ${tokens.bg.inputInner} border ${tokens.border.default} focus:border-emerald-500 rounded-lg px-2.5 py-1.5 sm:py-1 text-sm sm:text-xs font-bold font-mono-nums text-right rtl:text-left ${tokens.text.primary} outline-none shadow-xs`}
                 placeholder="0"
               />
             </div>
             <button
               onClick={() => handleDeleteCost(cost.id)}
-              className={`p-1 rounded-lg ${tokens.buttons.ghost} hover:text-rose-600 dark:hover:text-rose-400`}
+              className={`p-2 sm:p-1 rounded-lg ${tokens.buttons.ghost} hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer`}
               title={t('common.delete')}
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -100,7 +101,7 @@ export const FixedCostsCard: React.FC = () => {
           variant="link"
           size="xs"
           onClick={handleAddCost}
-          className="flex items-center gap-1 text-xs font-semibold"
+          className="flex items-center gap-1 text-xs font-semibold p-1"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>{t('calculator.addLineItem')}</span>

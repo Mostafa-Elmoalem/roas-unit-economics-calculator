@@ -42,10 +42,10 @@ export const SensitivityMatrixCard: React.FC = () => {
         </div>
 
         {/* Metric Toggle */}
-        <div className={`flex items-center ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-xl p-0.5 text-[11px]`}>
+        <div className={`flex items-center ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-xl p-0.5 text-xs w-full sm:w-auto justify-center`}>
           <button
             onClick={() => setMetricView('profit')}
-            className={`px-2.5 py-1 rounded-lg font-medium transition ${
+            className={`px-3 py-1.5 sm:py-1 rounded-lg font-medium transition cursor-pointer text-xs flex-1 sm:flex-none ${
               metricView === 'profit'
                 ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
                 : `${tokens.text.muted} hover:${tokens.text.primary}`
@@ -55,7 +55,7 @@ export const SensitivityMatrixCard: React.FC = () => {
           </button>
           <button
             onClick={() => setMetricView('unit-profit')}
-            className={`px-2.5 py-1 rounded-lg font-medium transition ${
+            className={`px-3 py-1.5 sm:py-1 rounded-lg font-medium transition cursor-pointer text-xs flex-1 sm:flex-none ${
               metricView === 'unit-profit'
                 ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
                 : `${tokens.text.muted} hover:${tokens.text.primary}`
@@ -65,7 +65,7 @@ export const SensitivityMatrixCard: React.FC = () => {
           </button>
           <button
             onClick={() => setMetricView('margin')}
-            className={`px-2.5 py-1 rounded-lg font-medium transition ${
+            className={`px-3 py-1.5 sm:py-1 rounded-lg font-medium transition cursor-pointer text-xs flex-1 sm:flex-none ${
               metricView === 'margin'
                 ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
                 : `${tokens.text.muted} hover:${tokens.text.primary}`
@@ -76,17 +76,17 @@ export const SensitivityMatrixCard: React.FC = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto p-4 sm:p-5">
-        <table className="w-full text-center text-xs">
+      <div className="overflow-x-auto p-3 sm:p-5 relative touch-pan-x">
+        <table className="w-full text-center text-xs border-collapse">
           <thead>
             <tr>
-              <th className={`p-2 text-left rtl:text-right text-[11px] font-semibold ${tokens.text.muted} uppercase tracking-wider`}>
+              <th className={`p-2 text-left rtl:text-right text-[11px] font-semibold ${tokens.text.muted} uppercase tracking-wider sticky left-0 rtl:right-0 bg-white dark:bg-[#18181b] z-10 shadow-r border-b ${tokens.border.default}`}>
                 {t('calculator.fulfillmentCol')}
               </th>
               {matrix.adSpendMultipliers.map((col, idx) => (
                 <th
                   key={idx}
-                  className={`p-2 text-[11px] font-semibold tracking-tight ${
+                  className={`p-2 text-[11px] font-semibold tracking-tight min-w-[90px] sm:min-w-[110px] ${
                     col.multiplier === 1.0
                       ? `${tokens.status.profit.text} ${tokens.status.profit.bg} rounded-t-lg font-bold`
                       : tokens.text.secondary
@@ -111,10 +111,10 @@ export const SensitivityMatrixCard: React.FC = () => {
 
               return (
                 <tr key={rowIdx} className={`hover:${tokens.bg.hover} transition`}>
-                  <td className={`py-2.5 px-3 text-left rtl:text-right font-bold font-mono-nums ${tokens.text.primary}`}>
+                  <td className={`py-2.5 px-3 text-left rtl:text-right font-bold font-mono-nums ${tokens.text.primary} sticky left-0 rtl:right-0 bg-white dark:bg-[#18181b] z-10 shadow-r`}>
                     <div className="flex items-center gap-1.5">
                       {isCurrentFulfillment && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 shrink-0" />
                       )}
                       <span>{fRate}%</span>
                     </div>
@@ -135,9 +135,9 @@ export const SensitivityMatrixCard: React.FC = () => {
                     }
 
                     return (
-                      <td key={colIdx} className="p-1.5">
+                      <td key={colIdx} className="p-1 sm:p-1.5">
                         <div
-                          className={`py-2 px-2.5 rounded-xl border text-xs font-mono-nums font-semibold transition-all ${getCellBg(
+                          className={`py-2 px-2 sm:px-2.5 rounded-xl border text-[11px] sm:text-xs font-mono-nums font-semibold transition-all ${getCellBg(
                             cell.totalProfit,
                             cell.isProfitable
                           )} ${

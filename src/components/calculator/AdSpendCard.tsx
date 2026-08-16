@@ -19,7 +19,7 @@ export const AdSpendCard: React.FC = () => {
   };
 
   return (
-    <div className={`${tokens.card.base} p-5 sm:p-6 space-y-5`}>
+    <div className={`${tokens.card.base} p-4 sm:p-6 space-y-4 sm:space-y-5`}>
       <div className={`flex items-center justify-between border-b ${tokens.border.default} pb-3`}>
         <div className="flex items-center gap-2">
           <div className={`p-1.5 rounded-lg ${tokens.status.loss.bg} ${tokens.status.loss.text} ${tokens.status.loss.border} border`}>
@@ -34,7 +34,7 @@ export const AdSpendCard: React.FC = () => {
         <div className={`flex items-center ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-xl p-0.5 text-xs`}>
           <button
             onClick={() => handleModeChange('per-unit')}
-            className={`px-2.5 py-1 rounded-lg font-medium transition ${
+            className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
               isPerUnitMode
                 ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
                 : `${tokens.text.secondary} hover:${tokens.text.primary}`
@@ -44,7 +44,7 @@ export const AdSpendCard: React.FC = () => {
           </button>
           <button
             onClick={() => handleModeChange('total')}
-            className={`px-2.5 py-1 rounded-lg font-medium transition ${
+            className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
               !isPerUnitMode
                 ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
                 : `${tokens.text.secondary} hover:${tokens.text.primary}`
@@ -55,10 +55,10 @@ export const AdSpendCard: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
         {/* Ad Spend Per Unit (CPA) */}
         <div
-          className={`p-4 rounded-xl border transition ${
+          className={`p-3.5 sm:p-4 rounded-xl border transition ${
             isPerUnitMode
               ? `${tokens.bg.input} ${tokens.border.active}`
               : `${tokens.bg.surfaceSubtle} ${tokens.border.default} opacity-80`
@@ -77,11 +77,12 @@ export const AdSpendCard: React.FC = () => {
           </div>
 
           <div className="relative">
-            <span className={`absolute left-3 rtl:right-3 rtl:left-auto top-1/2 -translate-y-1/2 text-xs font-semibold ${tokens.text.muted}`}>
+            <span className={`absolute left-3.5 rtl:right-3.5 rtl:left-auto top-1/2 -translate-y-1/2 text-xs font-semibold ${tokens.text.muted}`}>
               {currency === 'EGP' ? 'EGP' : '$'}
             </span>
             <input
               type="number"
+              inputMode="decimal"
               step="any"
               min="0"
               value={activeProduct.adSpendPerUnit || ''}
@@ -90,7 +91,7 @@ export const AdSpendCard: React.FC = () => {
                   adSpendPerUnit: parseFloat(e.target.value) || 0,
                 })
               }
-              className={`w-full ${tokens.bg.inputInner} border ${tokens.border.default} focus:border-emerald-500 rounded-lg pl-8 rtl:pr-8 rtl:pl-3 pr-3 py-2 text-xs font-bold font-mono-nums ${tokens.text.primary} outline-none transition shadow-xs`}
+              className={`w-full ${tokens.bg.inputInner} border ${tokens.border.default} focus:border-emerald-500 rounded-xl pl-8 rtl:pr-8 rtl:pl-3.5 pr-3.5 py-2.5 sm:py-2 text-sm sm:text-xs font-bold font-mono-nums ${tokens.text.primary} outline-none transition shadow-xs`}
               placeholder="0.00"
             />
           </div>
@@ -101,7 +102,7 @@ export const AdSpendCard: React.FC = () => {
 
         {/* Total Ad Spend */}
         <div
-          className={`p-4 rounded-xl border transition ${
+          className={`p-3.5 sm:p-4 rounded-xl border transition ${
             !isPerUnitMode
               ? `${tokens.bg.input} ${tokens.border.active}`
               : `${tokens.bg.surfaceSubtle} ${tokens.border.default} opacity-80`
@@ -120,11 +121,12 @@ export const AdSpendCard: React.FC = () => {
           </div>
 
           <div className="relative">
-            <span className={`absolute left-3 rtl:right-3 rtl:left-auto top-1/2 -translate-y-1/2 text-xs font-semibold ${tokens.text.muted}`}>
+            <span className={`absolute left-3.5 rtl:right-3.5 rtl:left-auto top-1/2 -translate-y-1/2 text-xs font-semibold ${tokens.text.muted}`}>
               {currency === 'EGP' ? 'EGP' : '$'}
             </span>
             <input
               type="number"
+              inputMode="decimal"
               step="any"
               min="0"
               value={activeProduct.totalAdSpend || ''}
@@ -133,7 +135,7 @@ export const AdSpendCard: React.FC = () => {
                   totalAdSpend: parseFloat(e.target.value) || 0,
                 })
               }
-              className={`w-full ${tokens.bg.inputInner} border ${tokens.border.default} focus:border-emerald-500 rounded-lg pl-8 rtl:pr-8 rtl:pl-3 pr-3 py-2 text-xs font-bold font-mono-nums ${tokens.text.primary} outline-none transition shadow-xs`}
+              className={`w-full ${tokens.bg.inputInner} border ${tokens.border.default} focus:border-emerald-500 rounded-xl pl-8 rtl:pr-8 rtl:pl-3.5 pr-3.5 py-2.5 sm:py-2 text-sm sm:text-xs font-bold font-mono-nums ${tokens.text.primary} outline-none transition shadow-xs`}
               placeholder="0.00"
             />
           </div>
@@ -144,7 +146,7 @@ export const AdSpendCard: React.FC = () => {
       </div>
 
       {/* Break-Even CPA Indicator Helper */}
-      <div className={`p-3.5 rounded-xl ${tokens.bg.input} border ${tokens.border.default} flex items-center justify-between text-xs`}>
+      <div className={`p-3.5 rounded-xl ${tokens.bg.input} border ${tokens.border.default} flex flex-wrap items-center justify-between gap-2 text-xs`}>
         <span className={`${tokens.text.secondary} font-medium`}>
           {t('calculator.maxAllowableCPA')}
         </span>

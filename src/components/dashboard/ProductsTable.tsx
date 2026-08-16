@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { calculateProductMetrics, formatCurrency, formatROAS } from '../../lib/calculations';
 import { DeleteConfirmationModal } from '../modals/DeleteConfirmationModal';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 import { tokens } from '../../theme/tokens';
 import {
   Search,
@@ -47,12 +49,10 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ onOpenAddModal }) 
         return { product, metrics };
       })
       .filter(({ product, metrics }) => {
-        // Search query filter
         const matchesSearch =
           product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (product.sku && product.sku.toLowerCase().includes(searchQuery.toLowerCase()));
 
-        // Status filter
         if (!matchesSearch) return false;
         if (statusFilter === 'profitable') return metrics.isProfitableAdjusted;
         if (statusFilter === 'underperforming') return !metrics.isProfitableAdjusted;
@@ -93,8 +93,8 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ onOpenAddModal }) 
     <>
       <div className={`${tokens.card.base} overflow-hidden`}>
         {/* Table Top Controls: Search & Filter Tabs */}
-        <div className={`p-4 sm:p-5 border-b ${tokens.border.default} flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3`}>
-          <div className="flex items-center gap-2 flex-1 max-w-md">
+        <div className={`p-3.5 sm:p-5 border-b ${tokens.border.default} flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3`}>
+          <div className="flex items-center gap-2 flex-1 w-full sm:max-w-md">
             <div className="relative w-full">
               <Search className={`w-4 h-4 ${tokens.text.muted} absolute left-3 rtl:right-3 rtl:left-auto top-1/2 -translate-y-1/2`} />
               <input
@@ -102,17 +102,17 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ onOpenAddModal }) 
                 placeholder={t('common.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full ${tokens.bg.input} border ${tokens.border.default} rounded-xl pl-9 rtl:pr-9 rtl:pl-4 pr-4 py-2 text-xs ${tokens.text.primary} ${tokens.text.placeholder} ${tokens.border.focus}`}
+                className={`w-full ${tokens.bg.input} border ${tokens.border.default} rounded-xl pl-9 rtl:pr-9 rtl:pl-4 pr-4 py-2 text-sm sm:text-xs ${tokens.text.primary} ${tokens.text.placeholder} ${tokens.border.focus}`}
               />
             </div>
           </div>
 
           <div className="flex items-center justify-between sm:justify-end gap-2">
             {/* Status filter pills */}
-            <div className={`flex items-center ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-xl p-1 text-xs`}>
+            <div className={`flex items-center ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-xl p-1 text-xs w-full sm:w-auto justify-center`}>
               <button
                 onClick={() => setStatusFilter('all')}
-                className={`px-3 py-1 rounded-lg font-medium transition ${
+                className={`px-2.5 sm:px-3 py-1 rounded-lg font-medium transition cursor-pointer text-xs ${
                   statusFilter === 'all'
                     ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
                     : `${tokens.text.secondary} hover:${tokens.text.primary}`
@@ -122,7 +122,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ onOpenAddModal }) 
               </button>
               <button
                 onClick={() => setStatusFilter('profitable')}
-                className={`px-3 py-1 rounded-lg font-medium transition ${
+                className={`px-2.5 sm:px-3 py-1 rounded-lg font-medium transition cursor-pointer text-xs ${
                   statusFilter === 'profitable'
                     ? `${tokens.status.profit.pillActive} shadow-xs`
                     : `${tokens.text.secondary} hover:${tokens.text.primary}`
@@ -132,7 +132,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ onOpenAddModal }) 
               </button>
               <button
                 onClick={() => setStatusFilter('underperforming')}
-                className={`px-3 py-1 rounded-lg font-medium transition ${
+                className={`px-2.5 sm:px-3 py-1 rounded-lg font-medium transition cursor-pointer text-xs ${
                   statusFilter === 'underperforming'
                     ? `${tokens.status.loss.pillActive} shadow-xs`
                     : `${tokens.text.secondary} hover:${tokens.text.primary}`
@@ -142,18 +142,126 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ onOpenAddModal }) 
               </button>
             </div>
 
-            <button
+            <Button
               onClick={onOpenAddModal}
-              className={`flex items-center gap-1 ${tokens.buttons.primary} px-3 py-2 rounded-xl text-xs`}
+              variant="default"
+              size="sm"
+              className="hidden sm:inline-flex"
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span className="hidden sm:inline">{t('common.addProduct')}</span>
-            </button>
+              <span>{t('common.addProduct')}</span>
+            </Button>
           </div>
         </div>
 
-        {/* Table Body */}
-        <div className="overflow-x-auto">
+        {/* 1. Mobile Phone Cards View (Screen < 640px) */}
+        <div className="block sm:hidden divide-y divide-zinc-200 dark:divide-[#27272a]/60">
+          {processedProducts.length === 0 ? (
+            <div className="py-12 text-center text-zinc-400 dark:text-[#71717a] p-4">
+              <Filter className="w-6 h-6 mx-auto mb-2 opacity-50" />
+              <p className="text-sm font-medium">{t('dashboard.noProductsMatch')}</p>
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setStatusFilter('all');
+                }}
+                className={`text-xs ${tokens.status.profit.text} underline mt-2`}
+              >
+                {t('dashboard.clearFilters')}
+              </button>
+            </div>
+          ) : (
+            processedProducts.map(({ product, metrics }) => {
+              const isProfitable = metrics.isProfitableAdjusted;
+              const isAboveBE =
+                metrics.breakEvenROAS !== null && metrics.currentROAS >= metrics.breakEvenROAS;
+
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => handleSelectProduct(product.id)}
+                  className={`p-4 ${tokens.bg.hover} transition-colors active:bg-zinc-100 dark:active:bg-[#27272a] space-y-3 cursor-pointer`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div
+                        className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                          isProfitable ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse'
+                        }`}
+                      />
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-sm text-zinc-900 dark:text-[#f4f4f5] truncate">
+                          {product.name}
+                        </h4>
+                        <p className="text-[11px] text-zinc-400 dark:text-[#71717a]">
+                          {product.sku || 'No SKU'} • {product.units.toLocaleString()} {t('common.units')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Badge variant={isAboveBE ? 'success' : 'destructive'} className="shrink-0 font-mono-nums">
+                      {isAboveBE ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                      <span>{formatROAS(metrics.currentROAS)}</span>
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 bg-zinc-50 dark:bg-[#09090b] rounded-xl p-2.5 text-center font-mono-nums border border-zinc-200/60 dark:border-[#27272a]/60">
+                    <div>
+                      <span className="text-[10px] text-zinc-400 dark:text-[#71717a] block">{t('dashboard.tablePrice')}</span>
+                      <span className="text-xs font-bold text-zinc-900 dark:text-[#f4f4f5]">
+                        {formatCurrency(product.sellingPrice, currency)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-zinc-400 dark:text-[#71717a] block">{t('dashboard.tableBEROAS')}</span>
+                      <span className="text-xs font-bold text-zinc-600 dark:text-[#a1a1aa]">
+                        {formatROAS(metrics.breakEvenROAS)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-zinc-400 dark:text-[#71717a] block">{t('dashboard.tableTotalProfit')}</span>
+                      <span className={`text-xs font-bold ${metrics.adjustedTotalProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                        {formatCurrency(metrics.adjustedTotalProfit, currency)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1" onClick={(e) => e.stopPropagation()}>
+                    <span className="text-[11px] text-zinc-500 dark:text-[#71717a]">
+                      {t('dashboard.tableFulfillment')}: <strong className="text-zinc-800 dark:text-zinc-200">{product.fulfillmentRate}%</strong>
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleSelectProduct(product.id)}
+                        className={`p-2 rounded-lg ${tokens.buttons.ghost} text-emerald-600 dark:text-emerald-400`}
+                        title={t('common.calculator')}
+                      >
+                        <Calculator className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => duplicateProduct(product.id)}
+                        className={`p-2 rounded-lg ${tokens.buttons.ghost}`}
+                        title={t('common.duplicate')}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setProductToDelete({ id: product.id, name: product.name })}
+                        className={`p-2 rounded-lg ${tokens.buttons.ghost} text-rose-600 dark:text-rose-400`}
+                        title={t('common.delete')}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* 2. Desktop & Tablet Full Table (Screen >= 640px) */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left rtl:text-right text-xs">
             <thead className={`${tokens.bg.tableHead} ${tokens.text.secondary} uppercase tracking-wider font-semibold border-b ${tokens.border.default}`}>
               <tr>

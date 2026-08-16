@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { formatCurrency, formatROAS } from '../../lib/calculations';
+import { tokens } from '../../theme/tokens';
 import { Layers } from 'lucide-react';
 
 export const ComparativeMatrixCard: React.FC = () => {
@@ -75,48 +76,52 @@ export const ComparativeMatrixCard: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-[#27272a] rounded-2xl overflow-hidden shadow-xs transition-colors duration-200">
-      <div className="p-5 border-b border-zinc-200 dark:border-[#27272a] flex items-center justify-between">
+    <div className={`${tokens.card.base} overflow-hidden`}>
+      <div className={`p-4 sm:p-5 border-b ${tokens.border.default} flex items-center justify-between`}>
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+          <div className={`p-1.5 rounded-lg ${tokens.status.profit.bg} ${tokens.status.profit.text} ${tokens.status.profit.border} border`}>
             <Layers className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-[#f4f4f5] tracking-tight">
+            <h3 className={`text-sm font-semibold ${tokens.text.primary} tracking-tight`}>
               {t('calculator.comparativeTitle')}
             </h3>
-            <p className="text-xs text-zinc-500 dark:text-[#71717a]">
+            <p className={`text-xs ${tokens.text.secondary}`}>
               {t('calculator.comparativeDesc', { rate: fulfillmentRate })}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs text-left rtl:text-right">
-          <thead className="bg-zinc-50 dark:bg-[#0f0f11] text-zinc-500 dark:text-[#a1a1aa] uppercase tracking-wider font-semibold border-b border-zinc-200 dark:border-[#27272a]">
+      <div className="overflow-x-auto touch-pan-x">
+        <table className="w-full text-xs text-left rtl:text-right border-collapse">
+          <thead className={`${tokens.bg.tableHead} ${tokens.text.secondary} uppercase tracking-wider font-semibold border-b ${tokens.border.default}`}>
             <tr>
-              <th className="py-3 px-4">{t('calculator.metric')}</th>
-              <th className="py-3 px-4">{t('calculator.rawCol')}</th>
-              <th className="py-3 px-4 text-emerald-600 dark:text-emerald-400">
+              <th className={`py-3 px-3.5 sm:px-4 sticky left-0 rtl:right-0 bg-zinc-50 dark:bg-[#0f0f11] z-10 shadow-r min-w-[130px] sm:min-w-[160px]`}>
+                {t('calculator.metric')}
+              </th>
+              <th className="py-3 px-3 sm:px-4 min-w-[100px]">{t('calculator.rawCol')}</th>
+              <th className={`py-3 px-3 sm:px-4 ${tokens.status.profit.text} min-w-[100px]`}>
                 {t('calculator.adjCol', { rate: fulfillmentRate })}
               </th>
-              <th className="py-3 px-4 text-right rtl:text-left">{t('calculator.varianceCol')}</th>
+              <th className="py-3 px-3 sm:px-4 text-right rtl:text-left min-w-[100px]">
+                {t('calculator.varianceCol')}
+              </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200 dark:divide-[#27272a]/60 font-mono-nums">
+          <tbody className={`divide-y ${tokens.border.divider} font-mono-nums`}>
             {comparisonRows.map((row, idx) => (
-              <tr key={idx} className="hover:bg-zinc-50 dark:hover:bg-[#202024] transition-colors">
-                <td className="py-3 px-4 font-sans font-medium text-zinc-900 dark:text-[#f4f4f5]">
+              <tr key={idx} className={`hover:${tokens.bg.hover} transition-colors`}>
+                <td className={`py-3 px-3.5 sm:px-4 font-sans font-medium ${tokens.text.primary} sticky left-0 rtl:right-0 bg-white dark:bg-[#18181b] z-10 shadow-r`}>
                   {row.metric}
                 </td>
-                <td className="py-3 px-4 text-zinc-600 dark:text-[#a1a1aa]">{row.raw}</td>
-                <td className="py-3 px-4 font-semibold text-zinc-900 dark:text-[#f4f4f5]">
+                <td className={`py-3 px-3 sm:px-4 ${tokens.text.secondary}`}>{row.raw}</td>
+                <td className={`py-3 px-3 sm:px-4 font-semibold ${tokens.text.primary}`}>
                   {row.adjusted}
                 </td>
                 <td
-                  className={`py-3 px-4 text-right rtl:text-left font-semibold ${
-                    row.isBad ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+                  className={`py-3 px-3 sm:px-4 text-right rtl:text-left font-semibold ${
+                    row.isBad ? tokens.status.loss.text : tokens.status.profit.text
                   }`}
                 >
                   {row.variance}
