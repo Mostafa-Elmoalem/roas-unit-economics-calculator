@@ -54,7 +54,7 @@ Since your container image is **private**:
 ### Step 2: Deploy the Stack in Portainer
 1. In Portainer: Go to **Stacks** $\rightarrow$ **Add stack**.
 2. **Name**: `trueroas-calculator`
-3. Under **Build method**, select **Web editor** and paste the contents of [`docker-compose.prod.yml`](file:///d:/Other/.MY%20Work/Software%20Development/DEV%20work%20-%20new%20ideas/ROAS-Ecommerce%20breakeEvenn/docker-compose.prod.yml):
+3. Under **Build method**, select **Web editor** (or **Repository**) and use the project's [`docker-compose.yml`](file:///d:/Other/.MY%20Work/Software%20Development/DEV%20work%20-%20new%20ideas/ROAS-Ecommerce%20breakeEvenn/docker-compose.yml):
 
 ```yaml
 services:

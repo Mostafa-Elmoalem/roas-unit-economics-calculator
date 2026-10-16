@@ -7,8 +7,12 @@ services:
       dockerfile: Dockerfile
     container_name: trueroas-calculator
     restart: unless-stopped
-    ports:
-      - "${PORT:-8080}:8080"
+    # Isolated: port 8080 is accessible internally to Nginx Proxy Manager on airbot-stack_app-network
+    expose:
+      - "8080"
+    # Optional: uncomment only if you need direct access via host port without a reverse proxy:
+    # ports:
+    #   - "${PORT:-8080}:8080"
     read_only: true
     tmpfs:
       - /tmp
@@ -33,3 +37,12 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      - default
+      - proxy-network
+
+networks:
+  default:
+  proxy-network:
+    external: true
+    name: ${PROXY_NETWORK:-airbot-stack_app-network}
