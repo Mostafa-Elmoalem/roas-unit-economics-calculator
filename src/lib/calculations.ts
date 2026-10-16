@@ -339,7 +339,3 @@ export function formatROAS(value: number | null | undefined): string {
   return `${value.toFixed(2)}x`;
 }
 
-export function formatPercent(value: number | undefined | null): string {
-  const num = Number(value) || 0;
-  return `${num >= 0 ? '+' : ''}${num.toFixed(1)}%`;
-}

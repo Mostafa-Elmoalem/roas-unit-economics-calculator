@@ -68,7 +68,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg" onClose={onClose}>
+      <DialogContent className="max-w-lg">
         <DialogHeader onClose={onClose}>
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">

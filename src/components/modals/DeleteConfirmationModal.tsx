@@ -28,7 +28,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md" onClose={onClose}>
+      <DialogContent className="max-w-md">
         <DialogHeader onClose={onClose}>
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">

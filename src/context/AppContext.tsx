@@ -35,7 +35,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export const STORAGE_KEYS = {
+const STORAGE_KEYS = {
   PROJECT_NAME: 'roas_calc_project_name',
   CURRENCY: 'roas_calc_currency',
   PRODUCTS: 'roas_calc_products',

@@ -35,8 +35,8 @@ export const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) 
 
 export const DialogContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { onClose?: () => void }
->(({ className, children, onClose, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, children, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(

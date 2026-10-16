@@ -86,7 +86,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => 
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col" onClose={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <DialogHeader onClose={onClose}>
           <div className="flex items-center gap-2.5">

@@ -6,7 +6,7 @@ import arTranslation from './locales/ar.json';
 const LANGUAGE_STORAGE_KEY = 'roas_calc_language';
 
 // Helper to get initial language from storage or navigator
-export const getInitialLanguage = (): 'en' | 'ar' => {
+const getInitialLanguage = (): 'en' | 'ar' => {
   if (typeof window !== 'undefined') {
     try {
       const sessionLang = window.sessionStorage?.getItem(LANGUAGE_STORAGE_KEY);
