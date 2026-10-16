@@ -19,6 +19,7 @@ docker-compose*.yml
 .agents
 .claude
 .codex
+.opencode
 .impeccable
 _bmad
 _bmad-output
