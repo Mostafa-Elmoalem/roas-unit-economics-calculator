@@ -18,6 +18,8 @@ docker-compose*.yml
 .agent
 .agents
 .claude
+.codex
+.impeccable
 _bmad
 _bmad-output
 .vscode

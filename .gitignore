@@ -28,3 +28,8 @@ dist-ssr
 *.agent
 *.agents
 *.claude
+.codex
+.impeccable
+.github/agents/
+.github/hooks/
+.github/skills/
