@@ -12,6 +12,7 @@ import {
   Trash2,
   Copy,
   ChevronDown,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 export const ProductHeader: React.FC = () => {
@@ -26,6 +27,8 @@ export const ProductHeader: React.FC = () => {
     setActiveProductId,
     setView,
     currency,
+    comparedProductIds,
+    toggleComparedProduct,
   } = useApp();
 
   const [isExportingPDF, setIsExportingPDF] = useState(false);
@@ -89,10 +92,24 @@ export const ProductHeader: React.FC = () => {
         </div>
 
         {/* Right: Product Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              if (!comparedProductIds.includes(activeProduct.id)) {
+                toggleComparedProduct(activeProduct.id);
+              }
+              setView('compare');
+            }}
+            className="flex items-center gap-1.5 bg-white dark:bg-[#18181b] hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 text-zinc-700 dark:text-[#a1a1aa] border border-zinc-200 dark:border-[#27272a] hover:border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-medium transition shadow-xs cursor-pointer"
+            title={t('common.compare')}
+          >
+            <ArrowLeftRight className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>{t('common.compare')}</span>
+          </button>
+
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 bg-white dark:bg-[#18181b] hover:bg-zinc-100 dark:hover:bg-[#27272a] text-zinc-700 dark:text-[#a1a1aa] hover:text-zinc-900 dark:hover:text-[#f4f4f5] border border-zinc-200 dark:border-[#27272a] px-3 py-1.5 rounded-xl text-xs font-medium transition shadow-xs"
+            className="flex items-center gap-1.5 bg-white dark:bg-[#18181b] hover:bg-zinc-100 dark:hover:bg-[#27272a] text-zinc-700 dark:text-[#a1a1aa] hover:text-zinc-900 dark:hover:text-[#f4f4f5] border border-zinc-200 dark:border-[#27272a] px-3 py-1.5 rounded-xl text-xs font-medium transition shadow-xs cursor-pointer"
             title={t('calculator.exportProductCSV')}
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />

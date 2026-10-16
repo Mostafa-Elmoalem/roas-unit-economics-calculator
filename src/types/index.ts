@@ -96,5 +96,5 @@ export interface SensitivityScenario {
   isProfitable: boolean;
 }
 
-export type ViewMode = 'dashboard' | 'calculator';
+export type ViewMode = 'dashboard' | 'calculator' | 'compare';
 export type ThemeMode = 'system' | 'dark' | 'light';

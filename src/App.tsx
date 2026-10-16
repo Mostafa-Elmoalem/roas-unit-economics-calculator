@@ -4,6 +4,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/common/Header';
 import { MainDashboard } from './components/dashboard/MainDashboard';
 import { ProductCalculator } from './components/calculator/ProductCalculator';
+import { ProductComparisonView } from './components/comparison/ProductComparisonView';
 import { ImportModal } from './components/modals/ImportModal';
 import { AddProductModal } from './components/modals/AddProductModal';
 import { tokens } from './theme/tokens';
@@ -31,8 +32,10 @@ const AppContent: React.FC = () => {
             onOpenAddModal={() => setIsAddModalOpen(true)}
             onOpenImportModal={() => setIsImportModalOpen(true)}
           />
-        ) : (
+        ) : view === 'calculator' ? (
           <ProductCalculator onOpenAddModal={() => setIsAddModalOpen(true)} />
+        ) : (
+          <ProductComparisonView onOpenAddModal={() => setIsAddModalOpen(true)} />
         )}
       </main>
 

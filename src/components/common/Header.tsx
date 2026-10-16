@@ -14,6 +14,7 @@ import {
   Check,
   Edit2,
   TrendingUp,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -33,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
     view,
     setView,
     activeProduct,
+    comparedProductIds,
   } = useApp();
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -97,10 +99,11 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Center (Hidden on small mobile, visible on md+) */}
+          {/* Center Navigation (3-Tab Focused Studio: Dashboard, Calculator, Compare) */}
           <div className={`hidden md:flex items-center ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-xl p-1 shadow-2xs shrink-0`}>
             <button
               onClick={() => setView('dashboard')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 view === 'dashboard'
                   ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
                   : `${tokens.text.secondary} hover:${tokens.text.primary}`
@@ -111,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => setView('calculator')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 view === 'calculator'
                   ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
                   : `${tokens.text.secondary} hover:${tokens.text.primary}`
@@ -122,6 +125,22 @@ export const Header: React.FC<HeaderProps> = ({
               {activeProduct && (
                 <span className={`text-[10px] ${tokens.status.profit.text} ${tokens.status.profit.bg} px-1.5 py-0.2 rounded-md font-mono-nums font-bold`}>
                   {t('common.active')}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setView('compare')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                view === 'compare'
+                  ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
+                  : `${tokens.text.secondary} hover:${tokens.text.primary}`
+              }`}
+            >
+              <ArrowLeftRight className="w-3.5 h-3.5" />
+              <span>{t('common.compare')}</span>
+              {comparedProductIds.length > 0 && (
+                <span className="text-[10px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 px-1.5 py-0.2 rounded-md font-mono-nums font-bold">
+                  {comparedProductIds.length}
                 </span>
               )}
             </button>
@@ -152,33 +171,44 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Mobile View Switcher (Visible only on small phones below md) */}
+        {/* Mobile & Tablet 3-Tab View Switcher (Visible below md) */}
         <div className="md:hidden pb-2.5 pt-1">
-          <div className={`grid grid-cols-2 gap-1 ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-xl p-1 shadow-2xs`}>
+          <div className={`grid grid-cols-3 gap-1 ${tokens.bg.toggleTrack} border ${tokens.border.default} rounded-xl p-1 shadow-2xs`}>
             <button
               onClick={() => setView('dashboard')}
-              className={`flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-1 py-2 text-[11px] font-semibold rounded-lg transition-all cursor-pointer ${
                 view === 'dashboard'
                   ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
                   : `${tokens.text.secondary} hover:${tokens.text.primary}`
               }`}
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>{t('common.dashboard')}</span>
+              <span className="truncate">{t('common.dashboard')}</span>
             </button>
             <button
               onClick={() => setView('calculator')}
-              className={`flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-1 py-2 text-[11px] font-semibold rounded-lg transition-all cursor-pointer ${
                 view === 'calculator'
                   ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
                   : `${tokens.text.secondary} hover:${tokens.text.primary}`
               }`}
             >
               <Calculator className="w-3.5 h-3.5" />
-              <span>{t('common.calculator')}</span>
-              {activeProduct && (
-                <span className={`text-[10px] ${tokens.status.profit.text} ${tokens.status.profit.bg} px-1.5 py-0.2 rounded-md font-mono-nums font-bold`}>
-                  {t('common.active')}
+              <span className="truncate">{t('common.calculator')}</span>
+            </button>
+            <button
+              onClick={() => setView('compare')}
+              className={`flex items-center justify-center gap-1 py-2 text-[11px] font-semibold rounded-lg transition-all cursor-pointer ${
+                view === 'compare'
+                  ? 'bg-white dark:bg-[#27272a] text-zinc-900 dark:text-[#f4f4f5] shadow-xs'
+                  : `${tokens.text.secondary} hover:${tokens.text.primary}`
+              }`}
+            >
+              <ArrowLeftRight className="w-3.5 h-3.5" />
+              <span className="truncate">{t('common.compareNav')}</span>
+              {comparedProductIds.length > 0 && (
+                <span className="text-[10px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-1 py-0.2 rounded font-mono-nums font-bold">
+                  {comparedProductIds.length}
                 </span>
               )}
             </button>

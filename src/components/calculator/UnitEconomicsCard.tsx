@@ -202,9 +202,10 @@ export const UnitEconomicsCard: React.FC = () => {
         ) : (
           /* Subsidized Dual-Cost Inputs */
           <div className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Field 1: Total Courier Fee */}
               <div>
-                <label className={`block text-[11px] font-medium ${tokens.text.secondary} mb-1`}>
+                <label className={`block text-[11px] font-medium ${tokens.text.secondary} mb-1 truncate`} title={`${t('calculator.courierShippingCost')} (${currency})`}>
                   {t('calculator.courierShippingCost')} ({currency})
                 </label>
                 <div className="relative">
@@ -217,19 +218,24 @@ export const UnitEconomicsCard: React.FC = () => {
                     step="any"
                     min="0"
                     value={courierCost || ''}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0;
                       updateProduct(activeProduct.id, {
-                        courierShippingCost: parseFloat(e.target.value) || 0,
-                      })
-                    }
+                        courierShippingCost: val,
+                      });
+                    }}
                     className={`w-full ${tokens.bg.input} border ${tokens.border.default} focus:border-emerald-500 rounded-xl pl-8 rtl:pr-8 rtl:pl-3 pr-3 py-2 text-xs font-bold font-mono-nums ${tokens.text.primary} outline-none transition`}
-                    placeholder="90"
+                    placeholder="100"
                   />
                 </div>
+                <span className={`block text-[10px] ${tokens.text.muted} mt-1 leading-tight`}>
+                  {t('calculator.courierShippingCostHint')}
+                </span>
               </div>
 
+              {/* Field 2: Customer Paid Fee */}
               <div>
-                <label className={`block text-[11px] font-medium ${tokens.text.secondary} mb-1`}>
+                <label className={`block text-[11px] font-medium ${tokens.text.secondary} mb-1 truncate`} title={`${t('calculator.customerShippingFee')} (${currency})`}>
                   {t('calculator.customerShippingFee')} ({currency})
                 </label>
                 <div className="relative">
@@ -242,35 +248,79 @@ export const UnitEconomicsCard: React.FC = () => {
                     step="any"
                     min="0"
                     value={customerFee || ''}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0;
                       updateProduct(activeProduct.id, {
-                        customerShippingFee: parseFloat(e.target.value) || 0,
-                      })
-                    }
+                        customerShippingFee: val,
+                      });
+                    }}
                     className={`w-full ${tokens.bg.input} border ${tokens.border.default} focus:border-emerald-500 rounded-xl pl-8 rtl:pr-8 rtl:pl-3 pr-3 py-2 text-xs font-bold font-mono-nums ${tokens.text.primary} outline-none transition`}
-                    placeholder="60"
+                    placeholder="50"
                   />
                 </div>
+                <span className={`block text-[10px] ${tokens.text.muted} mt-1 leading-tight`}>
+                  {t('calculator.customerShippingFeeHint')}
+                </span>
+              </div>
+
+              {/* Field 3: Merchant Subsidized Share */}
+              <div>
+                <label className={`block text-[11px] font-medium ${tokens.text.secondary} mb-1 truncate`} title={`${t('calculator.merchantSubsidizedShare')} (${currency})`}>
+                  {t('calculator.merchantSubsidizedShare')} ({currency})
+                </label>
+                <div className="relative">
+                  <span className={`absolute left-3 rtl:right-3 rtl:left-auto top-1/2 -translate-y-1/2 text-xs font-semibold ${tokens.text.muted}`}>
+                    {currency === 'EGP' ? 'EGP' : '$'}
+                  </span>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    step="any"
+                    min="0"
+                    value={merchantShare || ''}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0;
+                      updateProduct(activeProduct.id, {
+                        customerShippingFee: Math.max(0, courierCost - val),
+                      });
+                    }}
+                    className={`w-full ${tokens.bg.input} border ${tokens.border.default} focus:border-emerald-500 rounded-xl pl-8 rtl:pr-8 rtl:pl-3 pr-3 py-2 text-xs font-bold font-mono-nums text-emerald-600 dark:text-emerald-400 outline-none transition`}
+                    placeholder="50"
+                  />
+                </div>
+                <span className={`block text-[10px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 leading-tight`}>
+                  {t('calculator.merchantSubsidizedShareHint')}
+                </span>
               </div>
             </div>
 
             {/* Live Dual Impact Calculation Indicators */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-mono-nums text-xs">
               <div className={`p-2.5 rounded-lg ${tokens.status.profit.bg} border ${tokens.status.profit.border}`}>
-                <span className={`block text-[10px] ${tokens.status.profit.text} font-sans`}>
-                  {t('calculator.merchantSubsidizedShare')}:
-                </span>
-                <span className={`font-bold ${tokens.status.profit.text}`}>
-                  {formatCurrency(merchantShare, currency)} / طلب مُسلَّم
+                <div className="flex items-center justify-between">
+                  <span className={`text-[11px] ${tokens.status.profit.text} font-sans font-medium`}>
+                    {t('calculator.deliveredOrderLabel')}
+                  </span>
+                  <span className={`font-bold ${tokens.status.profit.text}`}>
+                    {formatCurrency(merchantShare, currency)}
+                  </span>
+                </div>
+                <span className={`block text-[10px] ${tokens.text.secondary} font-sans mt-0.5`}>
+                  {t('calculator.subsidizedHelperDelivered')}
                 </span>
               </div>
 
               <div className={`p-2.5 rounded-lg ${tokens.status.loss.bg} border ${tokens.status.loss.border}`}>
-                <span className={`block text-[10px] ${tokens.status.loss.text} font-sans`}>
-                  {t('calculator.returnLossShare')}:
-                </span>
-                <span className={`font-bold ${tokens.status.loss.text}`}>
-                  -{formatCurrency(courierCost, currency)} / طلب مرتجع
+                <div className="flex items-center justify-between">
+                  <span className={`text-[11px] ${tokens.status.loss.text} font-sans font-medium`}>
+                    {t('calculator.returnedOrderLabel')}
+                  </span>
+                  <span className={`font-bold ${tokens.status.loss.text}`}>
+                    -{formatCurrency(courierCost, currency)}
+                  </span>
+                </div>
+                <span className={`block text-[10px] ${tokens.text.secondary} font-sans mt-0.5`}>
+                  {t('calculator.subsidizedHelperReturned')}
                 </span>
               </div>
             </div>

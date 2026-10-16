@@ -16,6 +16,7 @@ import {
   Plus,
   CheckCircle2,
   AlertCircle,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 interface ProductsTableProps {
@@ -33,6 +34,8 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ onOpenAddModal }) 
     setView,
     duplicateProduct,
     deleteProduct,
+    comparedProductIds,
+    toggleComparedProduct,
   } = useApp();
 
   const [statusFilter, setStatusFilter] = useState<'all' | 'profitable' | 'underperforming'>('all');
@@ -231,6 +234,21 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ onOpenAddModal }) 
                       {t('dashboard.tableFulfillment')}: <strong className="text-zinc-800 dark:text-zinc-200">{product.fulfillmentRate}%</strong>
                     </span>
                     <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => toggleComparedProduct(product.id)}
+                        className={`p-2 rounded-lg transition-colors ${
+                          comparedProductIds.includes(product.id)
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                            : `${tokens.buttons.ghost} text-zinc-500`
+                        }`}
+                        title={
+                          comparedProductIds.includes(product.id)
+                            ? t('common.removeFromCompare')
+                            : t('common.addToCompare')
+                        }
+                      >
+                        <ArrowLeftRight className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleSelectProduct(product.id)}
                         className={`p-2 rounded-lg ${tokens.buttons.ghost} text-emerald-600 dark:text-emerald-400`}
@@ -445,6 +463,21 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({ onOpenAddModal }) 
                       {/* 8. Actions */}
                       <td className="py-3.5 px-4 text-right rtl:text-left" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end rtl:justify-start gap-1">
+                          <button
+                            onClick={() => toggleComparedProduct(product.id)}
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              comparedProductIds.includes(product.id)
+                                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                                : `${tokens.buttons.ghost} hover:text-emerald-600 dark:hover:text-emerald-400`
+                            }`}
+                            title={
+                              comparedProductIds.includes(product.id)
+                                ? t('common.removeFromCompare')
+                                : t('common.addToCompare')
+                            }
+                          >
+                            <ArrowLeftRight className="w-3.5 h-3.5" />
+                          </button>
                           <button
                             onClick={() => handleSelectProduct(product.id)}
                             className={`p-1.5 rounded-lg ${tokens.buttons.ghost} hover:text-emerald-600 dark:hover:text-emerald-400`}

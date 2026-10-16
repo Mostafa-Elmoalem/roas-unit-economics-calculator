@@ -16,6 +16,7 @@ interface AppContextType {
   activeProductMetrics: CalculatedMetrics | undefined;
   theme: ThemeMode;
   effectiveTheme: 'dark' | 'light';
+  comparedProductIds: string[];
 
   setProjectName: (name: string) => void;
   setCurrency: (currency: Currency) => void;
@@ -24,6 +25,9 @@ interface AppContextType {
   setSearchQuery: (query: string) => void;
   setTheme: (theme: ThemeMode) => void;
   toggleTheme: () => void;
+  setComparedProductIds: (ids: string[]) => void;
+  toggleComparedProduct: (id: string) => void;
+  clearComparedProducts: () => void;
 
   addProduct: (productData?: Partial<Product>) => Product;
   updateProduct: (id: string, updates: Partial<Product>) => void;
@@ -42,6 +46,7 @@ const STORAGE_KEYS = {
   ACTIVE_PRODUCT_ID: 'roas_calc_active_id',
   VIEW: 'roas_calc_view',
   THEME: 'roas_calc_theme',
+  COMPARED_PRODUCT_IDS: 'roas_calc_compared_ids',
 };
 
 const getSystemTheme = (): 'dark' | 'light' => {
@@ -139,6 +144,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     Storage.get(STORAGE_KEYS.VIEW, 'dashboard' as ViewMode)
   );
 
+  const [comparedProductIds, setComparedProductIdsState] = useState<string[]>(() => {
+    const loaded = Storage.get<string[]>(STORAGE_KEYS.COMPARED_PRODUCT_IDS, []);
+    if (Array.isArray(loaded) && loaded.length > 0) {
+      const valid = loaded.filter((id) => products.some((p) => p.id === id));
+      if (valid.length > 0) return valid;
+    }
+    return products.slice(0, 3).map((p) => p.id);
+  });
+
   const [theme, setThemeState] = useState<ThemeMode>(() =>
     Storage.get(STORAGE_KEYS.THEME, 'system' as ThemeMode)
   );
@@ -173,10 +187,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, [effectiveTheme]);
 
   // Use refs to always have the latest synchronous state for pagehide/unload
-  const stateRef = useRef({ projectName, currency, products, activeProductId, view, theme });
+  const stateRef = useRef({ projectName, currency, products, activeProductId, view, theme, comparedProductIds });
   useEffect(() => {
-    stateRef.current = { projectName, currency, products, activeProductId, view, theme };
-  }, [projectName, currency, products, activeProductId, view, theme]);
+    stateRef.current = { projectName, currency, products, activeProductId, view, theme, comparedProductIds };
+  }, [projectName, currency, products, activeProductId, view, theme, comparedProductIds]);
 
   // Synchronous flush handler
   const flushToStorage = useCallback(() => {
@@ -187,6 +201,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, s.activeProductId);
     Storage.set(STORAGE_KEYS.VIEW, s.view);
     Storage.set(STORAGE_KEYS.THEME, s.theme);
+    Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, s.comparedProductIds);
   }, []);
 
   // Listen to beforeunload, pagehide, and visibilitychange to prevent data loss on reload/tab switch
@@ -237,6 +252,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     Storage.set(STORAGE_KEYS.THEME, theme);
   }, [theme]);
 
+  useEffect(() => {
+    Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, comparedProductIds);
+  }, [comparedProductIds]);
+
   // 3. Derived active product and metrics
   const activeProduct = useMemo(() => {
     return products.find((p) => p.id === activeProductId) || products[0];
@@ -281,6 +300,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const nextTheme: ThemeMode =
       effectiveTheme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
+  };
+
+  const setComparedProductIds = (ids: string[]) => {
+    setComparedProductIdsState(ids);
+    Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, ids);
+  };
+
+  const toggleComparedProduct = (id: string) => {
+    setComparedProductIdsState((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, next);
+      return next;
+    });
+  };
+
+  const clearComparedProducts = () => {
+    setComparedProductIdsState([]);
+    Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, []);
   };
 
   // Actions
@@ -371,6 +408,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, nextActiveId);
       return remaining;
     });
+
+    setComparedProductIdsState((prev) => {
+      const next = prev.filter((x) => x !== id);
+      Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, next);
+      return next;
+    });
   };
 
   const duplicateProduct = (id: string): Product => {
@@ -417,11 +460,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setActiveProductIdState(INITIAL_PRODUCTS[0]?.id || null);
     setProjectNameState('Q3 E-Commerce Performance Unit Economics');
     setCurrencyState('USD');
+    const demoCompared = INITIAL_PRODUCTS.slice(0, 3).map((p) => p.id);
+    setComparedProductIdsState(demoCompared);
 
     Storage.set(STORAGE_KEYS.PRODUCTS, INITIAL_PRODUCTS);
     Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, INITIAL_PRODUCTS[0]?.id || null);
     Storage.set(STORAGE_KEYS.PROJECT_NAME, 'Q3 E-Commerce Performance Unit Economics');
     Storage.set(STORAGE_KEYS.CURRENCY, 'USD');
+    Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, demoCompared);
   };
 
   return (
@@ -438,6 +484,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         activeProductMetrics,
         theme,
         effectiveTheme,
+        comparedProductIds,
         setProjectName,
         setCurrency,
         setActiveProductId,
@@ -445,6 +492,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setSearchQuery,
         setTheme,
         toggleTheme,
+        setComparedProductIds,
+        toggleComparedProduct,
+        clearComparedProducts,
         addProduct,
         updateProduct,
         deleteProduct,

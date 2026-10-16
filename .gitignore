@@ -1,5 +1,16 @@
-# Logs
-logs
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production / Build outputs
+dist/
+dist-ssr/
+*.tsbuildinfo
+.eslintcache
+
+# Logs & debugging
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,29 +18,45 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Environment & Secrets (Local files)
+.env
+.env.*
+!.env.example
 *.local
 
-# Editor directories and files
+# IDEs & Editors
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swo
+*.swp
 
-# Folders
-*_bmad
-*.agent
-*.agents
-*.claude
-.codex
-.impeccable
+# OS System Junk
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+*.tmp
+
+# AI Agents, Skills, Frameworks & Tooling (Non-Git Development Files)
+.agent/
+.agents/
+.claude/
+.codex/
+.opencode/
+.impeccable/
+_bmad/
+_bmad-output/
+*_bmad*
 .github/agents/
 .github/hooks/
 .github/skills/
