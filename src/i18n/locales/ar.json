@@ -32,7 +32,25 @@
     "currency": "العملة",
     "language": "اللغة",
     "arabic": "العربية",
-    "english": "English"
+    "english": "English",
+    "exportBackup": "نسخة احتياطية (JSON)",
+    "restoreBackup": "استعادة من نسخة احتياطية",
+    "restoreErrorTitle": "فشل الاستعادة",
+    "restoreErrorDesc": "الملف المحدد ليس نسخة احتياطية صالحة من TrueROAS. لم يتم تغيير بياناتك.",
+    "categoryLabel": "الفئة"
+  },
+  "categories": {
+    "fashion_apparel": "الأزياء والملابس",
+    "beauty_personal_care": "الجمال والعناية الشخصية",
+    "home_kitchen": "المنزل والمطبخ",
+    "electronics_gadgets": "الإلكترونيات والأجهزة",
+    "health_wellness": "الصحة والعافية",
+    "sports_outdoors": "الرياضة والأنشطة الخارجية",
+    "baby_kids": "مستلزمات الأطفال",
+    "pet_supplies": "مستلزمات الحيوانات الأليفة",
+    "food_beverage": "الأغذية والمشروبات",
+    "accessories_jewelry": "الإكسسوارات والمجوهرات",
+    "other": "أخرى"
   },
   "theme": {
     "light": "الوضع النهاري",

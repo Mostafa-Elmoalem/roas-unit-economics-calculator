@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
-import { formatCurrency } from '../../lib/calculations';
-import type { FixedCostItem } from '../../types';
+import { createFixedCostItem, formatCurrency } from '@shared';
+import type { FixedCostItem } from '@shared';
 import { Button } from '../ui/button';
 import { tokens } from '../../theme/tokens';
 import { Building2, Plus, Trash2 } from 'lucide-react';
@@ -14,11 +14,7 @@ export const FixedCostsCard: React.FC = () => {
   if (!activeProduct || !activeProductMetrics) return null;
 
   const handleAddCost = () => {
-    const newItem: FixedCostItem = {
-      id: `fc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      name: t('calculator.customOverhead'),
-      amount: 500,
-    };
+    const newItem: FixedCostItem = createFixedCostItem(t('calculator.customOverhead'), 500);
     updateProduct(activeProduct.id, {
       fixedCosts: [...activeProduct.fixedCosts, newItem],
     });

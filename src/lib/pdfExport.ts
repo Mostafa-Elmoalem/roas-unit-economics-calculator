@@ -1,9 +1,17 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+// Theme backgrounds per DESIGN.md §2 — dark palette bg_app `#09090b`,
+// light palette bg_app `#f8fafc` (tokens.ts is className-only by design).
+const PDF_BACKGROUNDS: Record<'dark' | 'light', string> = {
+  dark: '#09090b',
+  light: '#f8fafc',
+};
+
 export async function exportElementToPDF(
   elementId: string,
-  fileName: string = 'ROAS_Unit_Economics_Report'
+  fileName: string = 'ROAS_Unit_Economics_Report',
+  theme: 'dark' | 'light'
 ): Promise<boolean> {
   const element = document.getElementById(elementId);
   if (!element) {
@@ -12,12 +20,12 @@ export async function exportElementToPDF(
   }
 
   try {
-    // Temporarily ensure high contrast rendering
+    // Render against the active theme's background (no hardcoded dark).
     const canvas = await html2canvas(element, {
       scale: 2, // High resolution
       useCORS: true,
       logging: false,
-      backgroundColor: '#09090b',
+      backgroundColor: PDF_BACKGROUNDS[theme],
       windowWidth: element.scrollWidth,
       windowHeight: element.scrollHeight,
     });

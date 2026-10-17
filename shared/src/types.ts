@@ -1,4 +1,34 @@
-export type Currency = 'USD' | 'EGP' | 'EUR' | 'SAR' | 'AED' | 'GBP' | 'CAD' | 'AUD';
+// TrueROAS shared domain types — single source of truth (AD-12).
+// Pure module: no storage, no React, no runtime dependencies.
+
+export const CURRENCIES = ['USD', 'EGP', 'EUR', 'SAR', 'AED', 'GBP', 'CAD', 'AUD'] as const;
+export type Currency = (typeof CURRENCIES)[number];
+
+/** Default demo project name (used by seeding and legacy migration). */
+export const DEFAULT_PROJECT_NAME = 'Q3 E-Commerce Performance Unit Economics';
+
+/** Fixed product categories (AD-4). snake_case values are dataset aggregation keys. */
+export const CATEGORIES = [
+  'fashion_apparel',
+  'beauty_personal_care',
+  'home_kitchen',
+  'electronics_gadgets',
+  'health_wellness',
+  'sports_outdoors',
+  'baby_kids',
+  'pet_supplies',
+  'food_beverage',
+  'accessories_jewelry',
+  'other',
+] as const;
+
+export type Category = (typeof CATEGORIES)[number];
+
+export const LANGUAGES = ['en', 'ar'] as const;
+export type Language = (typeof LANGUAGES)[number];
+
+/** Current persisted schema version. Bump only with a migration. */
+export const SCHEMA_VERSION = 1;
 
 export interface FixedCostItem {
   id: string;
@@ -6,10 +36,12 @@ export interface FixedCostItem {
   amount: number;
 }
 
+/** Versioned entity envelope (AD-3): UUID id, ISO-8601 updatedAt, tombstone, schemaVersion. */
 export interface Product {
   id: string;
   name: string;
   sku?: string;
+  category: Category;
   sellingPrice: number;
   cogs: number;
   units: number;
@@ -24,6 +56,61 @@ export interface Product {
   fixedCosts: FixedCostItem[];
   createdAt: string;
   updatedAt: string;
+  schemaVersion: number;
+  deleted: boolean;
+  deletedAt?: string;
+}
+
+/** Reserved for future per-project preferences; v1 keeps this empty. */
+export interface ProjectSettings {
+  [key: string]: unknown;
+}
+
+/** Project is the first-class aggregate (AD-2): one currency per project. */
+export interface Project {
+  id: string;
+  name: string;
+  currency: Currency;
+  products: Product[];
+  settings: ProjectSettings;
+  createdAt: string;
+  updatedAt: string;
+  schemaVersion: number;
+  deleted: boolean;
+  deletedAt?: string;
+}
+
+export const VIEW_MODES = ['dashboard', 'calculator', 'compare'] as const;
+export type ViewMode = (typeof VIEW_MODES)[number];
+
+export const THEME_MODES = ['system', 'dark', 'light'] as const;
+export type ThemeMode = (typeof THEME_MODES)[number];
+
+/** UI state persisted alongside projects in the single v1 state blob. */
+export interface AppStateUi {
+  theme: ThemeMode;
+  language: Language;
+  view: ViewMode;
+  activeProductId: string | null;
+  comparedProductIds: string[];
+}
+
+/** Whole client state under `trueroas_v1_state` (AD-5). */
+export interface AppState {
+  schemaVersion: number;
+  activeProjectId: string | null;
+  projects: Project[];
+  ui: AppStateUi;
+}
+
+/** Backup file payload (AD-7). Device prefs (theme/language) are not part of a backup. */
+export interface BackupPayload {
+  app: 'trueroas';
+  kind: 'backup';
+  schemaVersion: number;
+  exportedAt: string;
+  activeProjectId: string | null;
+  projects: Project[];
 }
 
 export interface CalculatedMetrics {
@@ -95,6 +182,3 @@ export interface SensitivityScenario {
   netMarginPercent: number;
   isProfitable: boolean;
 }
-
-export type ViewMode = 'dashboard' | 'calculator' | 'compare';
-export type ThemeMode = 'system' | 'dark' | 'light';

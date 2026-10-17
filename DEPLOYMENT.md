@@ -134,7 +134,7 @@ Your app is now live and secured over HTTPS!
    * **Value**: Your copied Portainer Webhook URL.
 
 Whenever you `git push` to `main`, GitHub Actions automatically:
-1. Validates code (`oxlint` and `tsc`).
+1. Validates code (`oxlint`, `tsc -b` and `vitest`).
 2. Builds and tags the multi-arch container image.
 3. Pushes the private image to `ghcr.io`.
 4. Triggers the Portainer Webhook to immediately pull the new image and reload the container with zero downtime!

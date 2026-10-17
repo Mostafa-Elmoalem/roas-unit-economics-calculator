@@ -1,4 +1,5 @@
-import type { Product, CalculatedMetrics, PortfolioMetrics, Currency, SensitivityScenario } from '../types';
+import type { Product, CalculatedMetrics, PortfolioMetrics, Currency, SensitivityScenario } from './types';
+import { resolveAdSpend } from './operations';
 
 export function calculateProductMetrics(product: Product): CalculatedMetrics {
   const units = Math.max(1, product.units || 1);
@@ -29,16 +30,8 @@ export function calculateProductMetrics(product: Product): CalculatedMetrics {
   );
   const fixedCostPerUnit = units > 0 ? totalFixedCosts / units : 0;
 
-  // Ad Spend
-  let adSpendPerUnit = 0;
-  let totalAdSpend = 0;
-  if (product.adSpendMode === 'total') {
-    totalAdSpend = Math.max(0, product.totalAdSpend || 0);
-    adSpendPerUnit = units > 0 ? totalAdSpend / units : 0;
-  } else {
-    adSpendPerUnit = Math.max(0, product.adSpendPerUnit || 0);
-    totalAdSpend = adSpendPerUnit * units;
-  }
+  // Ad Spend — resolved by the single domain owner of the CPA/units sync rule (AD-6)
+  const { adSpendPerUnit, totalAdSpend } = resolveAdSpend(product);
 
   // --- 1. Raw Metrics (100% Fulfillment) ---
   const grossMargin = sellingPrice - cogs - effectiveDeliveredShippingCost;
@@ -255,10 +248,8 @@ export function generateSensitivityMatrix(product: Product): {
     { label: '+30% CPA', multiplier: 1.3 },
   ];
 
-  const baseAdSpend =
-    product.adSpendMode === 'total'
-      ? (product.totalAdSpend || 0) / (product.units || 1)
-      : product.adSpendPerUnit || 0;
+  // Base CPA comes from the domain sync owner (AD-6) — no ad-hoc re-resolution here.
+  const baseAdSpend = resolveAdSpend(product).adSpendPerUnit;
 
   const scenarios: SensitivityScenario[][] = fulfillmentRates.map((fRate) => {
     return adSpendMultipliers.map((mult) => {
@@ -338,4 +329,3 @@ export function formatROAS(value: number | null | undefined): string {
   }
   return `${value.toFixed(2)}x`;
 }
-

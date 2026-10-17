@@ -1,7 +1,7 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { tokens } from '../../theme/tokens';
-import type { Currency } from '../../types';
+import type { Currency } from '@shared';
 import { DollarSign, ChevronDown } from 'lucide-react';
 
 const CURRENCIES: { code: Currency; symbol: string; label: string }[] = [

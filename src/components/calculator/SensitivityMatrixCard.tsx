@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
-import { generateSensitivityMatrix, formatCurrency } from '../../lib/calculations';
+import { generateSensitivityMatrix, formatCurrency } from '@shared';
 import { tokens } from '../../theme/tokens';
 import { Activity } from 'lucide-react';
 

@@ -1,8 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
-import { formatCurrency } from '../../lib/calculations';
+import { formatCurrency } from '@shared';
 import { tokens } from '../../theme/tokens';
+import { CategorySelect } from '../common/CategorySelect';
 import { Boxes, Truck, Percent, Package, Split } from 'lucide-react';
 
 export const UnitEconomicsCard: React.FC = () => {
@@ -43,18 +44,32 @@ export const UnitEconomicsCard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
-        {/* Product Name */}
+        {/* Product Name & Category */}
         <div className="sm:col-span-2">
-          <label className={`block text-xs font-medium ${tokens.text.secondary} mb-1.5`}>
-            {t('calculator.productTitle')}
-          </label>
-          <input
-            type="text"
-            value={activeProduct.name}
-            onChange={(e) => updateProduct(activeProduct.id, { name: e.target.value })}
-            className={`w-full ${tokens.bg.input} border ${tokens.border.default} ${tokens.border.focus} rounded-xl px-3.5 py-2.5 sm:py-2 text-sm sm:text-xs font-medium ${tokens.text.primary} transition`}
-            placeholder={t('calculator.productTitlePlaceholder')}
-          />
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 min-w-0">
+              <label className={`block text-xs font-medium ${tokens.text.secondary} mb-1.5`}>
+                {t('calculator.productTitle')}
+              </label>
+              <input
+                type="text"
+                value={activeProduct.name}
+                onChange={(e) => updateProduct(activeProduct.id, { name: e.target.value })}
+                className={`w-full ${tokens.bg.input} border ${tokens.border.default} ${tokens.border.focus} rounded-xl px-3.5 py-2.5 sm:py-2 text-sm sm:text-xs font-medium ${tokens.text.primary} transition`}
+                placeholder={t('calculator.productTitlePlaceholder')}
+              />
+            </div>
+            <div className="sm:w-44 shrink-0">
+              <label className={`block text-xs font-medium ${tokens.text.secondary} mb-1.5`}>
+                {t('common.categoryLabel')}
+              </label>
+              <CategorySelect
+                value={activeProduct.category}
+                onChange={(category) => updateProduct(activeProduct.id, { category })}
+                className="w-full"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Selling Price */}

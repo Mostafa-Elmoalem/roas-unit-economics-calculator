@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
-import type { Product, Currency } from '../types';
-import { calculatePortfolioMetrics, calculateProductMetrics } from './calculations';
+import type { Product, Currency } from '@shared';
+import { calculatePortfolioMetrics, calculateProductMetrics } from '@shared';
 
 export function exportPortfolioToExcel(
   projectName: string,

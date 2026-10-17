@@ -32,7 +32,25 @@
     "currency": "Currency",
     "language": "Language",
     "arabic": "العربية",
-    "english": "English"
+    "english": "English",
+    "exportBackup": "Backup (JSON)",
+    "restoreBackup": "Restore from Backup",
+    "restoreErrorTitle": "Restore Failed",
+    "restoreErrorDesc": "The selected file is not a valid TrueROAS backup. Your data was not changed.",
+    "categoryLabel": "Category"
+  },
+  "categories": {
+    "fashion_apparel": "Fashion & Apparel",
+    "beauty_personal_care": "Beauty & Personal Care",
+    "home_kitchen": "Home & Kitchen",
+    "electronics_gadgets": "Electronics & Gadgets",
+    "health_wellness": "Health & Wellness",
+    "sports_outdoors": "Sports & Outdoors",
+    "baby_kids": "Baby & Kids",
+    "pet_supplies": "Pet Supplies",
+    "food_beverage": "Food & Beverage",
+    "accessories_jewelry": "Accessories & Jewelry",
+    "other": "Other"
   },
   "theme": {
     "light": "Light Mode",

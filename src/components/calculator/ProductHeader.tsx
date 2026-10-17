@@ -29,6 +29,7 @@ export const ProductHeader: React.FC = () => {
     currency,
     comparedProductIds,
     toggleComparedProduct,
+    effectiveTheme,
   } = useApp();
 
   const [isExportingPDF, setIsExportingPDF] = useState(false);
@@ -56,7 +57,8 @@ export const ProductHeader: React.FC = () => {
     setIsExportingPDF(true);
     await exportElementToPDF(
       'main-content-view',
-      `${activeProduct.name}_Unit_Economics_Report`
+      `${activeProduct.name}_Unit_Economics_Report`,
+      effectiveTheme
     );
     setIsExportingPDF(false);
   };

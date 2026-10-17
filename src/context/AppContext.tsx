@@ -1,8 +1,30 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import type { Product, Currency, ViewMode, PortfolioMetrics, CalculatedMetrics, ThemeMode } from '../types';
-import { INITIAL_PRODUCTS } from '../lib/mockData';
-import { calculatePortfolioMetrics, calculateProductMetrics } from '../lib/calculations';
+import {
+  activeProducts,
+  applyProductPatch,
+  calculatePortfolioMetrics,
+  calculateProductMetrics,
+  createProduct,
+  deleteProduct as tombstoneProduct,
+  duplicateProduct as duplicateProductOp,
+  findProject,
+  serializeBackup,
+  upsertProject,
+} from '@shared';
+import type {
+  AppState,
+  CalculatedMetrics,
+  Currency,
+  Language,
+  PortfolioMetrics,
+  Product,
+  Project,
+  ThemeMode,
+  ViewMode,
+} from '@shared';
+import { repository } from '../repository';
+import { setAppLanguage } from '../i18n/config';
 
 interface AppContextType {
   projectName: string;
@@ -16,6 +38,7 @@ interface AppContextType {
   activeProductMetrics: CalculatedMetrics | undefined;
   theme: ThemeMode;
   effectiveTheme: 'dark' | 'light';
+  language: Language;
   comparedProductIds: string[];
 
   setProjectName: (name: string) => void;
@@ -25,6 +48,7 @@ interface AppContextType {
   setSearchQuery: (query: string) => void;
   setTheme: (theme: ThemeMode) => void;
   toggleTheme: () => void;
+  setLanguage: (language: Language) => void;
   setComparedProductIds: (ids: string[]) => void;
   toggleComparedProduct: (id: string) => void;
   clearComparedProducts: () => void;
@@ -35,19 +59,12 @@ interface AppContextType {
   duplicateProduct: (id: string) => Product;
   importProducts: (newProducts: Product[], replace?: boolean) => void;
   resetToDemoData: () => void;
+
+  exportBackupJson: () => string;
+  restoreBackupFromJson: (text: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
-
-const STORAGE_KEYS = {
-  PROJECT_NAME: 'roas_calc_project_name',
-  CURRENCY: 'roas_calc_currency',
-  PRODUCTS: 'roas_calc_products',
-  ACTIVE_PRODUCT_ID: 'roas_calc_active_id',
-  VIEW: 'roas_calc_view',
-  THEME: 'roas_calc_theme',
-  COMPARED_PRODUCT_IDS: 'roas_calc_compared_ids',
-};
 
 const getSystemTheme = (): 'dark' | 'light' => {
   if (typeof window !== 'undefined' && window.matchMedia) {
@@ -69,99 +86,24 @@ const applyThemeToDOM = (effective: 'dark' | 'light') => {
   }
 };
 
-// Dual-layer Storage Utility (Synchronous LocalStorage + SessionStorage)
-const Storage = {
-  get: <T,>(key: string, fallback: T): T => {
-    if (typeof window === 'undefined') return fallback;
-
-    // 1. Try SessionStorage first
-    try {
-      const sessionItem = window.sessionStorage?.getItem(key);
-      if (sessionItem !== null && sessionItem !== undefined && sessionItem !== '') {
-        const parsed = JSON.parse(sessionItem);
-        if (parsed !== undefined && parsed !== null) return parsed as T;
-      }
-    } catch {
-      // fallback
-    }
-
-    // 2. Try LocalStorage
-    try {
-      const localItem = window.localStorage?.getItem(key);
-      if (localItem !== null && localItem !== undefined && localItem !== '') {
-        const parsed = JSON.parse(localItem);
-        if (parsed !== undefined && parsed !== null) return parsed as T;
-      }
-    } catch {
-      // fallback
-    }
-
-    return fallback;
-  },
-
-  set: <T,>(key: string, value: T): void => {
-    if (typeof window === 'undefined') return;
-    try {
-      const serialized = JSON.stringify(value);
-      try {
-        window.localStorage?.setItem(key, serialized);
-      } catch (err) {
-        console.warn('LocalStorage save error:', err);
-      }
-      try {
-        window.sessionStorage?.setItem(key, serialized);
-      } catch (err) {
-        console.warn('SessionStorage save error:', err);
-      }
-    } catch (err) {
-      console.error('Storage serialization error:', err);
-    }
-  },
-};
-
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // 1. Initial State from Dual Storage (SessionStorage + LocalStorage)
-  const [projectName, setProjectNameState] = useState<string>(() =>
-    Storage.get(STORAGE_KEYS.PROJECT_NAME, 'Q3 E-Commerce Performance Unit Economics')
-  );
+  // 1. Whole state loads (and migrates/seeds) through the single repository (CAP-8).
+  const [state, setState] = useState<AppState>(() => repository.load());
+  const stateRef = useRef(state);
 
-  const [currency, setCurrencyState] = useState<Currency>(() =>
-    Storage.get(STORAGE_KEYS.CURRENCY, 'USD' as Currency)
-  );
-
-  const [products, setProductsState] = useState<Product[]>(() => {
-    const loaded = Storage.get<Product[]>(STORAGE_KEYS.PRODUCTS, INITIAL_PRODUCTS);
-    return Array.isArray(loaded) && loaded.length > 0 ? loaded : INITIAL_PRODUCTS;
-  });
-
-  const [activeProductId, setActiveProductIdState] = useState<string | null>(() => {
-    const loaded = Storage.get<string | null>(STORAGE_KEYS.ACTIVE_PRODUCT_ID, null);
-    if (loaded && products.some((p) => p.id === loaded)) return loaded;
-    return products[0]?.id ?? INITIAL_PRODUCTS[0]?.id ?? null;
-  });
-
-  const [view, setViewState] = useState<ViewMode>(() =>
-    Storage.get(STORAGE_KEYS.VIEW, 'dashboard' as ViewMode)
-  );
-
-  const [comparedProductIds, setComparedProductIdsState] = useState<string[]>(() => {
-    const loaded = Storage.get<string[]>(STORAGE_KEYS.COMPARED_PRODUCT_IDS, []);
-    if (Array.isArray(loaded) && loaded.length > 0) {
-      const valid = loaded.filter((id) => products.some((p) => p.id === id));
-      if (valid.length > 0) return valid;
-    }
-    return products.slice(0, 3).map((p) => p.id);
-  });
-
-  const [theme, setThemeState] = useState<ThemeMode>(() =>
-    Storage.get(STORAGE_KEYS.THEME, 'system' as ThemeMode)
-  );
-
-  const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(getSystemTheme);
+  // Every mutation goes through one synchronous commit path: React state + dual-storage write.
+  const commit = useCallback((updater: (prev: AppState) => AppState) => {
+    const next = updater(stateRef.current);
+    stateRef.current = next;
+    setState(next);
+    repository.save(next);
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(getSystemTheme);
 
   // Effective theme resolving 'system' to OS preference
+  const theme = state.ui.theme;
   const effectiveTheme: 'dark' | 'light' = useMemo(() => {
     if (theme === 'system') return systemTheme;
     return theme;
@@ -186,33 +128,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     applyThemeToDOM(effectiveTheme);
   }, [effectiveTheme]);
 
-  // Use refs to always have the latest synchronous state for pagehide/unload
-  const stateRef = useRef({ projectName, currency, products, activeProductId, view, theme, comparedProductIds });
-  useEffect(() => {
-    stateRef.current = { projectName, currency, products, activeProductId, view, theme, comparedProductIds };
-  }, [projectName, currency, products, activeProductId, view, theme, comparedProductIds]);
-
-  // Synchronous flush handler
-  const flushToStorage = useCallback(() => {
-    const s = stateRef.current;
-    Storage.set(STORAGE_KEYS.PROJECT_NAME, s.projectName);
-    Storage.set(STORAGE_KEYS.CURRENCY, s.currency);
-    Storage.set(STORAGE_KEYS.PRODUCTS, s.products);
-    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, s.activeProductId);
-    Storage.set(STORAGE_KEYS.VIEW, s.view);
-    Storage.set(STORAGE_KEYS.THEME, s.theme);
-    Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, s.comparedProductIds);
-  }, []);
-
-  // Listen to beforeunload, pagehide, and visibilitychange to prevent data loss on reload/tab switch
+  // Synchronous flush on tab close / background (zero-loss behavior preserved)
   useEffect(() => {
     const handleUnload = () => {
-      flushToStorage();
+      repository.flush();
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        flushToStorage();
+        repository.flush();
       }
     };
 
@@ -225,41 +149,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       window.removeEventListener('pagehide', handleUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [flushToStorage]);
+  }, []);
 
-  // Reactive updates to storage
-  useEffect(() => {
-    Storage.set(STORAGE_KEYS.PROJECT_NAME, projectName);
-  }, [projectName]);
+  // 2. Derived active project / product and metrics
+  const activeProject = useMemo(
+    () => findProject(state, state.activeProjectId),
+    [state]
+  );
 
-  useEffect(() => {
-    Storage.set(STORAGE_KEYS.CURRENCY, currency);
-  }, [currency]);
+  const products = useMemo(
+    () => activeProducts(activeProject?.products ?? []),
+    [activeProject]
+  );
 
-  useEffect(() => {
-    Storage.set(STORAGE_KEYS.PRODUCTS, products);
-  }, [products]);
-
-  useEffect(() => {
-    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, activeProductId);
-  }, [activeProductId]);
-
-  useEffect(() => {
-    Storage.set(STORAGE_KEYS.VIEW, view);
-  }, [view]);
-
-  useEffect(() => {
-    Storage.set(STORAGE_KEYS.THEME, theme);
-  }, [theme]);
-
-  useEffect(() => {
-    Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, comparedProductIds);
-  }, [comparedProductIds]);
-
-  // 3. Derived active product and metrics
   const activeProduct = useMemo(() => {
-    return products.find((p) => p.id === activeProductId) || products[0];
-  }, [products, activeProductId]);
+    return products.find((p) => p.id === state.ui.activeProductId) || products[0];
+  }, [products, state.ui.activeProductId]);
 
   const portfolioMetrics = useMemo(() => {
     return calculatePortfolioMetrics(products);
@@ -270,221 +175,224 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return calculateProductMetrics(activeProduct);
   }, [activeProduct]);
 
-  // Immediate synchronous setters
+  // 3. Project-level helpers — all rules live in the domain module (CAP-9)
+  const updateActiveProject = useCallback(
+    (updater: (project: Project) => Project) => {
+      commit((prev) => {
+        const project = findProject(prev, prev.activeProjectId);
+        if (!project) return prev;
+        return { ...prev, projects: upsertProject(prev.projects, updater(project)) };
+      });
+    },
+    [commit]
+  );
+
+  const updateProjectProducts = useCallback(
+    (mapper: (products: Product[]) => Product[]) => {
+      updateActiveProject((project) => ({
+        ...project,
+        products: mapper(project.products),
+        updatedAt: new Date().toISOString(),
+      }));
+    },
+    [updateActiveProject]
+  );
+
   const setProjectName = (name: string) => {
-    setProjectNameState(name);
-    Storage.set(STORAGE_KEYS.PROJECT_NAME, name);
+    updateActiveProject((project) => ({ ...project, name, updatedAt: new Date().toISOString() }));
   };
 
-  const setCurrency = (c: Currency) => {
-    setCurrencyState(c);
-    Storage.set(STORAGE_KEYS.CURRENCY, c);
+  const setCurrency = (currency: Currency) => {
+    updateActiveProject((project) => ({ ...project, currency, updatedAt: new Date().toISOString() }));
   };
 
   const setActiveProductId = (id: string | null) => {
-    setActiveProductIdState(id);
-    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, id);
+    commit((prev) => ({ ...prev, ui: { ...prev.ui, activeProductId: id } }));
   };
 
-  const setView = (v: ViewMode) => {
-    setViewState(v);
-    Storage.set(STORAGE_KEYS.VIEW, v);
+  const setView = (view: ViewMode) => {
+    commit((prev) => ({ ...prev, ui: { ...prev.ui, view } }));
   };
 
   const setTheme = (t: ThemeMode) => {
-    setThemeState(t);
-    Storage.set(STORAGE_KEYS.THEME, t);
+    commit((prev) => ({ ...prev, ui: { ...prev.ui, theme: t } }));
   };
 
   const toggleTheme = () => {
-    const nextTheme: ThemeMode =
-      effectiveTheme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
+    setTheme(effectiveTheme === 'dark' ? 'light' : 'dark');
+  };
+
+  const setLanguage = (language: Language) => {
+    commit((prev) =>
+      prev.ui.language === language
+        ? prev
+        : { ...prev, ui: { ...prev.ui, language } }
+    );
+    setAppLanguage(language);
   };
 
   const setComparedProductIds = (ids: string[]) => {
-    setComparedProductIdsState(ids);
-    Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, ids);
+    commit((prev) => ({ ...prev, ui: { ...prev.ui, comparedProductIds: ids } }));
   };
 
   const toggleComparedProduct = (id: string) => {
-    setComparedProductIdsState((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, next);
-      return next;
+    commit((prev) => {
+      const includes = prev.ui.comparedProductIds.includes(id);
+      const next = includes
+        ? prev.ui.comparedProductIds.filter((x) => x !== id)
+        : [...prev.ui.comparedProductIds, id];
+      return { ...prev, ui: { ...prev.ui, comparedProductIds: next } };
     });
   };
 
   const clearComparedProducts = () => {
-    setComparedProductIdsState([]);
-    Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, []);
+    commit((prev) => ({ ...prev, ui: { ...prev.ui, comparedProductIds: [] } }));
   };
 
-  // Actions
+  // 4. Product actions — mutations delegated to domain operations (AD-6)
   const addProduct = (productData?: Partial<Product>): Product => {
-    const newId = `prod-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-    const newProduct: Product = {
-      id: newId,
-      name: productData?.name || `New Product ${products.length + 1}`,
-      sku: productData?.sku || `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
-      sellingPrice: productData?.sellingPrice ?? 50.0,
-      cogs: productData?.cogs ?? 15.0,
-      units: productData?.units ?? 500,
-      shippingPerUnit: productData?.shippingPerUnit ?? 5.0,
-      fulfillmentRate: productData?.fulfillmentRate ?? 80,
-      adSpendPerUnit: productData?.adSpendPerUnit ?? 15.0,
-      totalAdSpend: (productData?.adSpendPerUnit ?? 15.0) * (productData?.units ?? 500),
-      adSpendMode: productData?.adSpendMode ?? 'per-unit',
-      fixedCosts: productData?.fixedCosts || [
-        { id: `fc-${Date.now()}-1`, name: 'Photoshoot & Creatives', amount: 500 },
-        { id: `fc-${Date.now()}-2`, name: 'Rent & Overhead', amount: 800 },
-        { id: `fc-${Date.now()}-3`, name: 'Salaries & Media Buyer', amount: 1200 },
-      ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    const current = stateRef.current;
+    const project = findProject(current, current.activeProjectId);
+    const visibleCount = project ? project.products.filter((p) => !p.deleted).length : 0;
+    const newProduct = createProduct({
+      ...productData,
+      name: productData?.name || `New Product ${visibleCount + 1}`,
+    });
 
-    const nextProducts = [newProduct, ...products];
-    setProductsState(nextProducts);
-    setActiveProductIdState(newId);
-    setViewState('calculator');
-
-    // Immediate synchronous save to both storages
-    Storage.set(STORAGE_KEYS.PRODUCTS, nextProducts);
-    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, newId);
-    Storage.set(STORAGE_KEYS.VIEW, 'calculator');
+    commit((prev) => {
+      const activeProjectNow = findProject(prev, prev.activeProjectId);
+      if (!activeProjectNow) return prev;
+      const nextProject: Project = {
+        ...activeProjectNow,
+        products: [newProduct, ...activeProjectNow.products],
+        updatedAt: new Date().toISOString(),
+      };
+      return {
+        ...prev,
+        projects: upsertProject(prev.projects, nextProject),
+        ui: { ...prev.ui, activeProductId: newProduct.id, view: 'calculator' },
+      };
+    });
 
     return newProduct;
   };
 
   const updateProduct = (id: string, updates: Partial<Product>) => {
-    setProductsState((prev) => {
-      const nextProducts = prev.map((p) => {
-        if (p.id !== id) return p;
-
-        const updated: Product = {
-          ...p,
-          ...updates,
-          updatedAt: new Date().toISOString(),
-        };
-
-        // Recalculate synchronized ad spend
-        if (updates.adSpendPerUnit !== undefined && updated.adSpendMode === 'per-unit') {
-          updated.totalAdSpend = updated.adSpendPerUnit * (updated.units || 1);
-        } else if (updates.totalAdSpend !== undefined && updated.adSpendMode === 'total') {
-          updated.adSpendPerUnit = updated.totalAdSpend / (updated.units || 1);
-        } else if (updates.units !== undefined) {
-          if (updated.adSpendMode === 'per-unit') {
-            updated.totalAdSpend = updated.adSpendPerUnit * updated.units;
-          } else {
-            updated.adSpendPerUnit = updated.totalAdSpend / (updated.units || 1);
-          }
-        }
-
-        return updated;
-      });
-
-      // Synchronously write immediately to localStorage & sessionStorage
-      Storage.set(STORAGE_KEYS.PRODUCTS, nextProducts);
-      return nextProducts;
-    });
+    updateProjectProducts((productsNow) =>
+      productsNow.map((p) => (p.id === id ? applyProductPatch(p, updates) : p))
+    );
   };
 
   const deleteProduct = (id: string) => {
-    setProductsState((prev) => {
-      const remaining = prev.filter((p) => p.id !== id);
-      let nextActiveId = activeProductId;
+    commit((prev) => {
+      const project = findProject(prev, prev.activeProjectId);
+      if (!project) return prev;
 
-      if (activeProductId === id) {
-        nextActiveId = remaining[0]?.id || null;
-        setActiveProductIdState(nextActiveId);
-        if (remaining.length === 0) {
-          setViewState('dashboard');
-          Storage.set(STORAGE_KEYS.VIEW, 'dashboard');
+      const nextProducts = project.products.map((p) =>
+        p.id === id ? tombstoneProduct(p) : p
+      );
+      const visible = activeProducts(nextProducts);
+
+      const ui = { ...prev.ui, comparedProductIds: prev.ui.comparedProductIds.filter((x) => x !== id) };
+      if (prev.ui.activeProductId === id) {
+        ui.activeProductId = visible[0]?.id ?? null;
+        if (visible.length === 0) {
+          ui.view = 'dashboard';
         }
       }
 
-      Storage.set(STORAGE_KEYS.PRODUCTS, remaining);
-      Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, nextActiveId);
-      return remaining;
-    });
-
-    setComparedProductIdsState((prev) => {
-      const next = prev.filter((x) => x !== id);
-      Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, next);
-      return next;
+      const nextProject: Project = {
+        ...project,
+        products: nextProducts,
+        updatedAt: new Date().toISOString(),
+      };
+      return { ...prev, projects: upsertProject(prev.projects, nextProject), ui };
     });
   };
 
   const duplicateProduct = (id: string): Product => {
-    const target = products.find((p) => p.id === id);
+    const current = stateRef.current;
+    const project = findProject(current, current.activeProjectId);
+    const target = project?.products.find((p) => p.id === id && !p.deleted);
     if (!target) throw new Error('Product not found');
 
-    const newId = `prod-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-    const duplicate: Product = {
-      ...target,
-      id: newId,
-      name: `${target.name} (Copy)`,
-      sku: target.sku ? `${target.sku}-COPY` : undefined,
-      fixedCosts: target.fixedCosts.map((fc) => ({
-        ...fc,
-        id: `fc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      })),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    const duplicate = duplicateProductOp(target);
 
-    const nextProducts = [duplicate, ...products];
-    setProductsState(nextProducts);
-    setActiveProductIdState(newId);
-
-    Storage.set(STORAGE_KEYS.PRODUCTS, nextProducts);
-    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, newId);
+    commit((prev) => {
+      const activeProjectNow = findProject(prev, prev.activeProjectId);
+      if (!activeProjectNow) return prev;
+      const nextProject: Project = {
+        ...activeProjectNow,
+        products: [duplicate, ...activeProjectNow.products],
+        updatedAt: new Date().toISOString(),
+      };
+      return {
+        ...prev,
+        projects: upsertProject(prev.projects, nextProject),
+        ui: { ...prev.ui, activeProductId: duplicate.id },
+      };
+    });
 
     return duplicate;
   };
 
   const importProducts = (newProducts: Product[], replace = false) => {
-    const nextProducts = replace ? newProducts : [...newProducts, ...products];
-    const nextActiveId = newProducts[0]?.id || null;
-
-    setProductsState(nextProducts);
-    setActiveProductIdState(nextActiveId);
-
-    Storage.set(STORAGE_KEYS.PRODUCTS, nextProducts);
-    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, nextActiveId);
+    commit((prev) => {
+      const project = findProject(prev, prev.activeProjectId);
+      if (!project) return prev;
+      const nextProducts = replace ? newProducts : [...newProducts, ...project.products];
+      const nextProject: Project = {
+        ...project,
+        products: nextProducts,
+        updatedAt: new Date().toISOString(),
+      };
+      return {
+        ...prev,
+        projects: upsertProject(prev.projects, nextProject),
+        ui: { ...prev.ui, activeProductId: newProducts[0]?.id || null },
+      };
+    });
   };
 
   const resetToDemoData = () => {
-    setProductsState(INITIAL_PRODUCTS);
-    setActiveProductIdState(INITIAL_PRODUCTS[0]?.id || null);
-    setProjectNameState('Q3 E-Commerce Performance Unit Economics');
-    setCurrencyState('USD');
-    const demoCompared = INITIAL_PRODUCTS.slice(0, 3).map((p) => p.id);
-    setComparedProductIdsState(demoCompared);
-
-    Storage.set(STORAGE_KEYS.PRODUCTS, INITIAL_PRODUCTS);
-    Storage.set(STORAGE_KEYS.ACTIVE_PRODUCT_ID, INITIAL_PRODUCTS[0]?.id || null);
-    Storage.set(STORAGE_KEYS.PROJECT_NAME, 'Q3 E-Commerce Performance Unit Economics');
-    Storage.set(STORAGE_KEYS.CURRENCY, 'USD');
-    Storage.set(STORAGE_KEYS.COMPARED_PRODUCT_IDS, demoCompared);
+    const demo = repository.createDemoState();
+    commit((prev) => ({
+      ...prev,
+      activeProjectId: demo.activeProjectId,
+      projects: demo.projects,
+      ui: {
+        ...prev.ui,
+        activeProductId: demo.ui.activeProductId,
+        comparedProductIds: demo.ui.comparedProductIds,
+      },
+    }));
   };
+
+  // 5. Backup / restore (CAP-10)
+  const exportBackupJson = useCallback((): string => serializeBackup(stateRef.current), []);
+
+  const restoreBackupFromJson = useCallback((text: string) => {
+    const next = repository.restoreBackup(text); // throws on malformed input; state untouched
+    stateRef.current = next;
+    setState(next);
+  }, []);
 
   return (
     <AppContext.Provider
       value={{
-        projectName,
-        currency,
+        projectName: activeProject?.name ?? '',
+        currency: activeProject?.currency ?? 'USD',
         products,
-        activeProductId,
-        view,
+        activeProductId: state.ui.activeProductId,
+        view: state.ui.view,
         searchQuery,
         activeProduct,
         portfolioMetrics,
         activeProductMetrics,
         theme,
         effectiveTheme,
-        comparedProductIds,
+        language: state.ui.language,
+        comparedProductIds: state.ui.comparedProductIds,
         setProjectName,
         setCurrency,
         setActiveProductId,
@@ -492,6 +400,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setSearchQuery,
         setTheme,
         toggleTheme,
+        setLanguage,
         setComparedProductIds,
         toggleComparedProduct,
         clearComparedProducts,
@@ -501,6 +410,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         duplicateProduct,
         importProducts,
         resetToDemoData,
+        exportBackupJson,
+        restoreBackupFromJson,
       }}
     >
       {children}

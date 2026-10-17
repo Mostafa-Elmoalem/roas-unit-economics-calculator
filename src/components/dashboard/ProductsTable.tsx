@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
-import { calculateProductMetrics, formatCurrency, formatROAS } from '../../lib/calculations';
+import { calculateProductMetrics, formatCurrency, formatROAS } from '@shared';
 import { DeleteConfirmationModal } from '../modals/DeleteConfirmationModal';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';

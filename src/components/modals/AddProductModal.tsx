@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import confetti from 'canvas-confetti';
+import { createFixedCostItem, type Category } from '@shared';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import {
 } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { CategorySelect } from '../common/CategorySelect';
 import { Plus } from 'lucide-react';
 
 interface AddProductModalProps {
@@ -25,6 +27,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
 
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
+  const [category, setCategory] = useState<Category>('other');
   const [sellingPrice, setSellingPrice] = useState<number | ''>(65);
   const [cogs, setCogs] = useState<number | ''>(18);
   const [units, setUnits] = useState<number | ''>(1000);
@@ -38,6 +41,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     addProduct({
       name: name.trim() || 'New E-Commerce Product',
       sku: sku.trim() || `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
+      category,
       sellingPrice: Number(sellingPrice) || 50,
       cogs: Number(cogs) || 15,
       units: Number(units) || 500,
@@ -45,9 +49,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
       adSpendPerUnit: Number(adSpendPerUnit) || 15,
       fulfillmentRate: Number(fulfillmentRate) || 80,
       fixedCosts: [
-        { id: `fc-${Date.now()}-1`, name: 'Photoshoot & Creative', amount: 600 },
-        { id: `fc-${Date.now()}-2`, name: 'Studio & Warehousing Rent', amount: 900 },
-        { id: `fc-${Date.now()}-3`, name: 'Salaries & Media Buyer', amount: 1200 },
+        createFixedCostItem('Photoshoot & Creative', 600),
+        createFixedCostItem('Studio & Warehousing Rent', 900),
+        createFixedCostItem('Salaries & Media Buyer', 1200),
       ],
     });
 
@@ -64,6 +68,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
     onClose();
     setName('');
     setSku('');
+    setCategory('other');
   };
 
   return (
@@ -110,6 +115,14 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClos
                   placeholder={t('modals.skuPlaceholder')}
                 />
               </div>
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="block text-xs font-medium text-zinc-600 dark:text-[#a1a1aa] mb-1">
+                {t('common.categoryLabel')}
+              </label>
+              <CategorySelect value={category} onChange={setCategory} className="w-full" />
             </div>
 
             {/* Selling Price & COGS */}

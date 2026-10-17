@@ -2,8 +2,8 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
 import { parseCustomCSVOrExcel, generateSampleCSV } from '../../lib/csvParser';
-import type { Product } from '../../types';
-import { formatCurrency } from '../../lib/calculations';
+import type { Product } from '@shared';
+import { formatCurrency } from '@shared';
 import {
   Dialog,
   DialogContent,

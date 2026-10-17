@@ -1,16 +1,18 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { setAppLanguage } from '../../i18n/config';
+import { useApp } from '../../context/AppContext';
+import type { Language } from '@shared';
 import { tokens } from '../../theme/tokens';
 import { Languages } from 'lucide-react';
 
 export const LanguageSelector: React.FC = () => {
   const { i18n } = useTranslation();
-  const currentLang = (i18n.language === 'ar' ? 'ar' : 'en') as 'en' | 'ar';
+  const { setLanguage } = useApp();
+  const currentLang = (i18n.language === 'ar' ? 'ar' : 'en') as Language;
 
   const toggleLanguage = () => {
-    const nextLang = currentLang === 'en' ? 'ar' : 'en';
-    setAppLanguage(nextLang);
+    const nextLang: Language = currentLang === 'en' ? 'ar' : 'en';
+    setLanguage(nextLang);
   };
 
   return (

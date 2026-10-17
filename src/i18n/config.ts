@@ -2,24 +2,11 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import enTranslation from './locales/en.json';
 import arTranslation from './locales/ar.json';
+import type { Language } from '@shared';
+import { repository } from '../repository';
 
-const LANGUAGE_STORAGE_KEY = 'roas_calc_language';
-
-// Helper to get initial language from storage or navigator
-const getInitialLanguage = (): 'en' | 'ar' => {
-  if (typeof window !== 'undefined') {
-    try {
-      const sessionLang = window.sessionStorage?.getItem(LANGUAGE_STORAGE_KEY);
-      if (sessionLang === 'en' || sessionLang === 'ar') return sessionLang;
-
-      const localLang = window.localStorage?.getItem(LANGUAGE_STORAGE_KEY);
-      if (localLang === 'en' || localLang === 'ar') return localLang;
-    } catch {}
-  }
-  return 'en';
-};
-
-const initialLang = getInitialLanguage();
+// Language lives in the single repository-owned state blob (AD-5, CAP-8).
+const initialLang: Language = repository.load().ui.language;
 
 // Apply document direction immediately
 if (typeof document !== 'undefined') {
@@ -41,18 +28,13 @@ i18n
     },
   });
 
-export const setAppLanguage = (lang: 'en' | 'ar') => {
+export const setAppLanguage = (lang: Language) => {
   i18n.changeLanguage(lang);
   if (typeof document !== 'undefined') {
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
   }
-  if (typeof window !== 'undefined') {
-    try {
-      window.localStorage?.setItem(LANGUAGE_STORAGE_KEY, lang);
-      window.sessionStorage?.setItem(LANGUAGE_STORAGE_KEY, lang);
-    } catch {}
-  }
+  repository.setLanguage(lang);
 };
 
 export default i18n;

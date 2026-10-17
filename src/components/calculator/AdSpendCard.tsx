@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
-import { formatCurrency } from '../../lib/calculations';
+import { formatCurrency } from '@shared';
 import { Badge } from '../ui/badge';
 import { tokens } from '../../theme/tokens';
 import { Megaphone, Target, DollarSign } from 'lucide-react';

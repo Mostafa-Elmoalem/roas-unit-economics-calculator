@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
-import { calculateProductMetrics, formatCurrency } from '../../lib/calculations';
+import { calculateProductMetrics, formatCurrency } from '@shared';
 import { tokens } from '../../theme/tokens';
 import { Button } from '../ui/button';
 

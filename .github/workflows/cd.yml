@@ -39,8 +39,11 @@ jobs:
       - name: Lint checks (oxlint)
         run: npm run lint
 
-      - name: Type check (tsc)
-        run: npx tsc --noEmit
+      - name: Type check (tsc project build)
+        run: npx tsc -b
+
+      - name: Tests (vitest)
+        run: npm test
 
   docker-cd:
     name: Build & Push Docker Image to GHCR

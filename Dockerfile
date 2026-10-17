@@ -12,6 +12,7 @@ RUN npm ci --no-audit --ignore-scripts
 # Copy application source and build configurations
 COPY tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts index.html ./
 COPY src/ ./src/
+COPY shared/ ./shared/
 COPY public/ ./public/
 
 # Compile TypeScript and bundle with Vite

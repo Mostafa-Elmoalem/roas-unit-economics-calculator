@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
-import { formatROAS } from '../../lib/calculations';
+import { formatROAS } from '@shared';
 import { Badge } from '../ui/badge';
 import { tokens } from '../../theme/tokens';
 import { TrendingUp, ShieldCheck, AlertTriangle } from 'lucide-react';

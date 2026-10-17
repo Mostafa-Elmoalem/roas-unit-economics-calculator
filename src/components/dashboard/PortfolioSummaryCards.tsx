@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../context/AppContext';
-import { formatCurrency, formatROAS } from '../../lib/calculations';
+import { formatCurrency, formatROAS } from '@shared';
 import { tokens } from '../../theme/tokens';
 import {
   TrendingUp,
