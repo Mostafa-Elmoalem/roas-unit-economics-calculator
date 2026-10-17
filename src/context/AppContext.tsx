@@ -24,6 +24,13 @@ import type {
   ViewMode,
 } from '@shared';
 import { repository } from '../repository';
+import {
+  beaconFlush,
+  emit as emitTelemetry,
+  notifyProjectChange,
+  start as startTelemetry,
+  stop as stopTelemetry,
+} from '../telemetry';
 import { setAppLanguage } from '../i18n/config';
 
 interface AppContextType {
@@ -97,6 +104,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     stateRef.current = next;
     setState(next);
     repository.save(next);
+
+    // Telemetry orchestration only: the module decides what/when to capture (AD-8).
+    const project = findProject(next, next.activeProjectId);
+    if (project) notifyProjectChange(project);
   }, []);
 
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -128,10 +139,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     applyThemeToDOM(effectiveTheme);
   }, [effectiveTheme]);
 
+  // Telemetry starts once per session: deviceId, app_opened and the session snapshot (AD-8).
+  useEffect(() => {
+    startTelemetry(repository);
+    const project = findProject(stateRef.current, stateRef.current.activeProjectId);
+    if (project) notifyProjectChange(project);
+    return () => stopTelemetry();
+  }, []);
+
   // Synchronous flush on tab close / background (zero-loss behavior preserved)
   useEffect(() => {
     const handleUnload = () => {
       repository.flush();
+      beaconFlush();
     };
 
     const handleVisibilityChange = () => {
@@ -200,10 +220,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const setProjectName = (name: string) => {
     updateActiveProject((project) => ({ ...project, name, updatedAt: new Date().toISOString() }));
+    const projectId = stateRef.current.activeProjectId;
+    if (projectId) emitTelemetry('project_updated', { projectId, field: 'name' });
   };
 
   const setCurrency = (currency: Currency) => {
     updateActiveProject((project) => ({ ...project, currency, updatedAt: new Date().toISOString() }));
+    const projectId = stateRef.current.activeProjectId;
+    if (projectId) emitTelemetry('project_updated', { projectId, field: 'currency' });
   };
 
   const setActiveProductId = (id: string | null) => {
@@ -274,6 +298,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       };
     });
 
+    emitTelemetry('product_created', { productId: newProduct.id, category: newProduct.category });
     return newProduct;
   };
 
@@ -281,6 +306,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     updateProjectProducts((productsNow) =>
       productsNow.map((p) => (p.id === id ? applyProductPatch(p, updates) : p))
     );
+    emitTelemetry('product_updated', { productId: id });
   };
 
   const deleteProduct = (id: string) => {
@@ -308,6 +334,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       };
       return { ...prev, projects: upsertProject(prev.projects, nextProject), ui };
     });
+
+    emitTelemetry('product_deleted', { productId: id });
   };
 
   const duplicateProduct = (id: string): Product => {
@@ -333,6 +361,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       };
     });
 
+    emitTelemetry('product_created', { productId: duplicate.id, category: duplicate.category });
     return duplicate;
   };
 
@@ -352,6 +381,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         ui: { ...prev.ui, activeProductId: newProducts[0]?.id || null },
       };
     });
+
+    emitTelemetry('csv_imported', {
+      productCount: newProducts.length,
+      mode: replace ? 'replace' : 'append',
+    });
   };
 
   const resetToDemoData = () => {
@@ -366,15 +400,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         comparedProductIds: demo.ui.comparedProductIds,
       },
     }));
+    const demoProjectId = demo.activeProjectId ?? demo.projects[0]?.id;
+    if (demoProjectId) {
+      emitTelemetry('project_updated', { projectId: demoProjectId, field: 'reset' });
+    }
   };
 
   // 5. Backup / restore (CAP-10)
-  const exportBackupJson = useCallback((): string => serializeBackup(stateRef.current), []);
+  const exportBackupJson = useCallback((): string => {
+    emitTelemetry('backup_exported', { projectCount: stateRef.current.projects.length });
+    return serializeBackup(stateRef.current);
+  }, []);
 
   const restoreBackupFromJson = useCallback((text: string) => {
     const next = repository.restoreBackup(text); // throws on malformed input; state untouched
     stateRef.current = next;
     setState(next);
+    emitTelemetry('backup_restored', { projectCount: next.projects.length });
+    const project = findProject(next, next.activeProjectId);
+    if (project) notifyProjectChange(project);
   }, []);
 
   return (

@@ -3,6 +3,10 @@ node_modules
 dist
 dist-ssr
 
+# api package (its Dockerfile builds from the repo root context)
+api/node_modules
+api/dist
+
 # Version control
 .git
 .gitignore

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   activeProducts,
+  buildEvent,
+  buildSnapshot,
   createProduct,
   createProject,
   deleteProduct,
@@ -12,8 +14,10 @@ import type { AppState } from '@shared';
 import {
   createMemoryEngine,
   createRepository,
+  DEVICE_ID_KEY,
   LEGACY_STORAGE_KEYS,
   STATE_KEY,
+  TELEMETRY_QUEUE_KEY,
 } from './index';
 
 describe('repository load — clean browser', () => {
@@ -329,5 +333,73 @@ describe('language stays repository-owned', () => {
 
     expect(createRepository(engine).getLanguage()).toBe('ar');
     expect(JSON.parse(engine.get(STATE_KEY)!).ui.language).toBe('ar');
+  });
+});
+
+describe('telemetry device identity (CAP-12)', () => {
+  it('mints a stable UUID deviceId across reloads', () => {
+    const engine = createMemoryEngine();
+    const first = createRepository(engine).ensureDeviceId();
+
+    expect(first).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    expect(createRepository(engine).ensureDeviceId()).toBe(first);
+    expect(engine.get(DEVICE_ID_KEY)).toBe(first);
+  });
+
+  it('mints a fresh deviceId when the profile is wiped', () => {
+    const engine = createMemoryEngine();
+    const first = createRepository(engine).ensureDeviceId();
+
+    const wiped = createMemoryEngine();
+    const second = createRepository(wiped).ensureDeviceId();
+
+    expect(second).not.toBe(first);
+  });
+
+  it('mints a fresh deviceId if stored deviceId is not a valid UUID', () => {
+    const engine = createMemoryEngine({ [DEVICE_ID_KEY]: 'corrupt-not-a-uuid' });
+    const repo = createRepository(engine);
+
+    const minted = repo.ensureDeviceId();
+    expect(minted).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    expect(minted).not.toBe('corrupt-not-a-uuid');
+  });
+});
+
+describe('telemetry queue persists through the repository (CAP-8, C12)', () => {
+  it('round-trips queued items untouched', () => {
+    const engine = createMemoryEngine();
+    const repo = createRepository(engine);
+    const event = buildEvent('app_opened', undefined, '2026-10-17T10:00:00.000Z');
+    const snapshot = buildSnapshot(repo.load().projects[0], '2026-10-17T10:00:00.000Z');
+
+    repo.saveTelemetryQueue([event, snapshot]);
+
+    const reloaded = createRepository(engine).getTelemetryQueue();
+    expect(reloaded).toEqual([event, snapshot]);
+  });
+
+  it('flush rewrites the last known queue and deviceId', () => {
+    const engine = createMemoryEngine();
+    const repo = createRepository(engine);
+    const deviceId = repo.ensureDeviceId();
+    const event = buildEvent('backup_exported', { projectCount: 1 }, '2026-10-17T10:00:00.000Z');
+    repo.saveTelemetryQueue([event]);
+
+    engine.set(TELEMETRY_QUEUE_KEY, '{corrupt');
+    engine.set(DEVICE_ID_KEY, '');
+    repo.flush();
+
+    expect(createRepository(engine).getTelemetryQueue()).toEqual([event]);
+    expect(engine.get(DEVICE_ID_KEY)).toBe(deviceId);
+  });
+
+  it('an unreadable queue reads as empty instead of crashing', () => {
+    const engine = createMemoryEngine({ [TELEMETRY_QUEUE_KEY]: 'not json at all' });
+    const repo = createRepository(engine);
+
+    expect(repo.getTelemetryQueue()).toEqual([]);
+    // The unusable raw value is left on disk until an explicit save replaces it.
+    expect(engine.get(TELEMETRY_QUEUE_KEY)).toBe('not json at all');
   });
 });

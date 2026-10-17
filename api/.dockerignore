@@ -1,0 +1,18 @@
+# Build context exclusions for the api package (used when the api folder is the context)
+node_modules
+dist
+
+# Version control & CI
+.git
+.gitignore
+.github
+
+# Env files (secrets must never be baked into images)
+.env
+.env.*
+*.local
+
+# Docs & editor configs
+*.md
+.vscode
+.idea

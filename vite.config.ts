@@ -15,6 +15,16 @@ export default defineConfig({
       '@shared': fileURLToPath(new URL('./shared/src', import.meta.url)),
     },
   },
+  // Same-origin `/api/*` in production (behind NPM); locally the dev server proxies
+  // to the api service, path preserved (dev parity with prod).
+  server: {
+    proxy: {
+      '/api': {
+        target: process.env.VITE_DEV_API_URL ?? 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+  },
   test: {
     environment: 'node',
     include: ['shared/src/**/*.test.ts', 'src/**/*.test.ts'],

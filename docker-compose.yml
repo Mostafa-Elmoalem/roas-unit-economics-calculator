@@ -41,6 +41,93 @@ services:
       - default
       - proxy-network
 
+  api:
+    image: ghcr.io/mostafa-elmoalem/roas-unit-economics-calculator-api:latest
+    pull_policy: always
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+      target: runner
+    container_name: trueroas-api
+    restart: unless-stopped
+    # Isolated: port 3000 is reached by Nginx Proxy Manager on airbot-stack_app-network
+    # via a /api proxy-host location; never published to the host.
+    expose:
+      - "3000"
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-trueroas}:${POSTGRES_PASSWORD:-trueroas}@postgres:5432/${POSTGRES_DB:-trueroas}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-60}
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - default
+      - proxy-network
+
+  postgres:
+    image: postgres:18.6-alpine
+    container_name: trueroas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-trueroas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-trueroas}
+      POSTGRES_DB: ${POSTGRES_DB:-trueroas}
+    # Postgres 18 images keep the cluster under /var/lib/postgresql (declared VOLUME).
+    # No host ports: only the api container reaches it over the compose network.
+    volumes:
+      - pgdata:/var/lib/postgresql
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trueroas} -d ${POSTGRES_DB:-trueroas}"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - default
+
+volumes:
+  pgdata:
+
 networks:
   default:
   proxy-network:

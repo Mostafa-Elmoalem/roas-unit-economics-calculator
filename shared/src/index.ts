@@ -5,3 +5,4 @@ export * from './calculations';
 export * from './migrations';
 export * from './backup';
 export * from './csv';
+export * from './telemetry';

@@ -3,7 +3,10 @@
 import {
   createProject,
   DEFAULT_PROJECT_NAME,
+  generateId,
   hasLegacyState,
+  isTelemetryEvent,
+  isTelemetrySnapshot,
   mergeProjects,
   migrateLegacyState,
   parseBackup,
@@ -13,14 +16,15 @@ import {
   type LegacyRawState,
   type Product,
   type Project,
+  type TelemetryItem,
 } from '@shared';
 import { createDemoProducts } from '../lib/mockData';
 import { createBrowserEngine, type StorageEngine } from './engine';
-import { STATE_KEY, LEGACY_STORAGE_KEYS } from './keys';
+import { DEVICE_ID_KEY, LEGACY_STORAGE_KEYS, STATE_KEY, TELEMETRY_QUEUE_KEY } from './keys';
 
 export { createBrowserEngine, createMemoryEngine } from './engine';
 export type { StorageEngine } from './engine';
-export { STATE_KEY, LEGACY_STORAGE_KEYS } from './keys';
+export { DEVICE_ID_KEY, LEGACY_STORAGE_KEYS, STATE_KEY, TELEMETRY_QUEUE_KEY } from './keys';
 
 export interface Repository {
   /** Session -> local read, migrate-on-load, demo fallback. */
@@ -35,6 +39,12 @@ export interface Repository {
   createDemoState(): AppState;
   /** Parse, merge (LWW by id), persist, and return the restored state. Throws on malformed input. */
   restoreBackup(text: string): AppState;
+  /** Read the stable anonymous deviceId, minting and persisting one on first use (CAP-12). */
+  ensureDeviceId(): string;
+  /** Queued telemetry items, oldest first. Never pruned or auto-deleted (C12). */
+  getTelemetryQueue(): TelemetryItem[];
+  /** Persist the queue as-is; trimming only ever happens after a successful send. */
+  saveTelemetryQueue(items: TelemetryItem[]): void;
 }
 
 export function createDemoState(): AppState {
@@ -78,6 +88,8 @@ function visibleProducts(project: Project | undefined): Product[] {
 
 export function createRepository(engine: StorageEngine): Repository {
   let cached: AppState | null = null;
+  let cachedDeviceId: string | null = null;
+  let cachedQueue: TelemetryItem[] | null = null;
 
   function persist(state: AppState): void {
     cached = state;
@@ -123,6 +135,8 @@ export function createRepository(engine: StorageEngine): Repository {
     const state = cached ?? load();
     engine.set(STATE_KEY, JSON.stringify(state));
     cached = state;
+    if (cachedDeviceId) engine.set(DEVICE_ID_KEY, cachedDeviceId);
+    if (cachedQueue) engine.set(TELEMETRY_QUEUE_KEY, JSON.stringify(cachedQueue));
   }
 
   function setLanguage(language: Language): void {
@@ -172,6 +186,51 @@ export function createRepository(engine: StorageEngine): Repository {
     return state;
   }
 
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  function ensureDeviceId(): string {
+    if (cachedDeviceId) return cachedDeviceId;
+
+    const existing = engine.get(DEVICE_ID_KEY);
+    if (existing && UUID_REGEX.test(existing.trim())) {
+      const valid = existing.trim();
+      cachedDeviceId = valid;
+      return valid;
+    }
+
+    const minted = generateId();
+    cachedDeviceId = minted;
+    engine.set(DEVICE_ID_KEY, minted);
+    return minted;
+  }
+
+  function getTelemetryQueue(): TelemetryItem[] {
+    if (cachedQueue) return cachedQueue;
+
+    let items: TelemetryItem[] = [];
+    const raw = engine.get(TELEMETRY_QUEUE_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw) as unknown;
+        if (Array.isArray(parsed)) {
+          items = parsed.filter(
+            (entry): entry is TelemetryItem => isTelemetryEvent(entry) || isTelemetrySnapshot(entry)
+          );
+        }
+      } catch {
+        // Unreadable queue reads as empty; the raw value stays untouched until a save replaces it.
+      }
+    }
+
+    cachedQueue = items;
+    return items;
+  }
+
+  function saveTelemetryQueue(items: TelemetryItem[]): void {
+    cachedQueue = items;
+    engine.set(TELEMETRY_QUEUE_KEY, JSON.stringify(items));
+  }
+
   return {
     load,
     save: persist,
@@ -180,6 +239,9 @@ export function createRepository(engine: StorageEngine): Repository {
     setLanguage,
     createDemoState,
     restoreBackup,
+    ensureDeviceId,
+    getTelemetryQueue,
+    saveTelemetryQueue,
   };
 }
 

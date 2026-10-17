@@ -1,0 +1,56 @@
+# =================================================================
+# TrueROAS — Development stack (Phase 2: PostgreSQL + api)
+# =================================================================
+# Usage:
+#   docker compose -f docker-compose.dev.yml up --build
+#
+# The web app keeps running on the host (`npm run dev`, port 5173) and
+# proxies /api to the api service on http://localhost:3000 via vite.config.ts.
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    container_name: trueroas-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-trueroas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-trueroas}
+      POSTGRES_DB: ${POSTGRES_DB:-trueroas}
+    # Postgres 18 images keep the cluster under /var/lib/postgresql (declared VOLUME),
+    # so the named volume mounts there, not at the old /var/lib/postgresql/data path.
+    volumes:
+      - pgdata-dev:/var/lib/postgresql
+    # Host access for a local psql/IDE (localhost-only).
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trueroas} -d ${POSTGRES_DB:-trueroas}"]
+      interval: 5s
+      timeout: 3s
+      start_period: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+      target: dev
+    container_name: trueroas-api-dev
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-trueroas}:${POSTGRES_PASSWORD:-trueroas}@postgres:5432/${POSTGRES_DB:-trueroas}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-60}
+    # Localhost-only: the host's Vite dev server proxies /api here.
+    ports:
+      - "127.0.0.1:${API_PORT:-3000}:3000"
+    volumes:
+      # tsx watch reloads on source changes; only sources are mounted so the
+      # image's node_modules stay intact.
+      - ./api/src:/app/api/src
+      - ./shared:/app/shared
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata-dev:
