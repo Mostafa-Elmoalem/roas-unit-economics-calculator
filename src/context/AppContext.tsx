@@ -32,6 +32,7 @@ import {
   stop as stopTelemetry,
 } from '../telemetry';
 import { setAppLanguage } from '../i18n/config';
+import { requestStoragePersistence } from '../pwa';
 
 interface AppContextType {
   projectName: string;
@@ -298,6 +299,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       };
     });
 
+    // First data save of the session: one-shot, silent persist request (AD-20).
+    requestStoragePersistence();
     emitTelemetry('product_created', { productId: newProduct.id, category: newProduct.category });
     return newProduct;
   };
@@ -361,6 +364,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       };
     });
 
+    requestStoragePersistence();
     emitTelemetry('product_created', { productId: duplicate.id, category: duplicate.category });
     return duplicate;
   };
@@ -382,6 +386,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       };
     });
 
+    requestStoragePersistence();
     emitTelemetry('csv_imported', {
       productCount: newProducts.length,
       mode: replace ? 'replace' : 'append',
@@ -416,6 +421,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const next = repository.restoreBackup(text); // throws on malformed input; state untouched
     stateRef.current = next;
     setState(next);
+    requestStoragePersistence(); // one-shot persist guard (AD-20)
     emitTelemetry('backup_restored', { projectCount: next.projects.length });
     const project = findProject(next, next.activeProjectId);
     if (project) notifyProjectChange(project);
