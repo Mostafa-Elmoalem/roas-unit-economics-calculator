@@ -256,5 +256,10 @@
     "storageSynced": "100% In-Browser & LocalStorage Synced",
     "madeWith": "Made with",
     "by": "by"
+  },
+  "pwa": {
+    "updateAvailable": "A new version of the app is ready",
+    "reload": "Reload",
+    "dismiss": "Dismiss"
   }
 }

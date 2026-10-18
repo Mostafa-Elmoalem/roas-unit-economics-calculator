@@ -9,6 +9,7 @@ import { ImportModal } from './components/modals/ImportModal';
 import { AddProductModal } from './components/modals/AddProductModal';
 import { tokens } from './theme/tokens';
 import { Heart } from 'lucide-react';
+import { UpdateToast } from './components/common/UpdateToast';
 
 const AppContent: React.FC = () => {
   const { t } = useTranslation();
@@ -82,6 +83,9 @@ const AppContent: React.FC = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
       />
+
+      {/* User-prompted service-worker update (AD-20): renders nothing while idle */}
+      <UpdateToast />
     </div>
   );
 };

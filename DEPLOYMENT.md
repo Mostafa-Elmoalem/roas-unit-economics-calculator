@@ -261,3 +261,11 @@ docker exec trueroas-api wget -qO- http://127.0.0.1:3000/health
 # Inspect Postgres data (no host port; go through the container)
 docker exec -it trueroas-postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select count(*) from usage_events;"
 ```
+
+## 4. PWA Artifacts
+
+The web image ships an installable app shell (`dist/sw.js`, `dist/manifest.webmanifest`, icons). Cache policy for these artifacts:
+
+- `dist/sw.js` and `dist/manifest.webmanifest` must **never be cached** by any layer — the stacked nginx block already answers them with `Cache-Control: no-cache, no-store, must-revalidate`; any CDN or reverse proxy in front (NPM, Cloudflare, …) must pass them through un-cached. A stale service worker keeps the old shell alive across deploys and defeats the update flow.
+- Updates are **user-prompted**: when a new build is deployed, the running app shows an in-app toast (Reload / Dismiss). Nothing is auto-reloaded; a dismissed prompt simply re-surfaces on the next session.
+- On the first data save of a session the app requests `navigator.storage.persist()` once (silent, fire-and-forget) so local data resists browser eviction.
